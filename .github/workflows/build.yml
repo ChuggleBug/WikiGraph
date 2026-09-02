@@ -33,10 +33,6 @@ jobs:
       - name: Build Project
         run: npm run build
 
-  save:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
