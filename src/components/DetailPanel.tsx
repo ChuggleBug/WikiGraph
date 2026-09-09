@@ -7,6 +7,7 @@ import {
   ExternalIcon,
   PlusIcon,
   SpinnerIcon,
+  ArrowRightIcon,
 } from './icons'
 import titleTransform from '../titleTransform';
 
@@ -67,9 +68,10 @@ export function DetailPanel({
           <div className="wg-kicker">Linked articles</div>
           <div className="wg-lk-list">
             <div className="wg-lk-scroll">
-              {node.links.map((title) => {
+              {node.links.sort().map((title) => {
                 const here = nodeIds.has(title)
                 const pending = pendingTitles.has(title)
+                const [hovered, setHovered] = useState(false)
                 return (
                   <button
                     key={title}
@@ -78,6 +80,8 @@ export function DetailPanel({
                     onClick={() =>
                       here ? onSelectExisting(title) : onAdd(title)
                     }
+                    onMouseEnter={() => setHovered(true)} 
+                    onMouseLeave={() => setHovered(false)}
                   >
                     <span className="wg-lk-name">{titleTransform(title)}</span>
                     {pending ? (
@@ -86,7 +90,8 @@ export function DetailPanel({
                       </span>
                     ) : here ? (
                       <span className="wg-lk-on" title="on canvas">
-                        <CheckIcon size={12} />
+                        {hovered ? <ArrowRightIcon size={12} /> : <CheckIcon size={12} />}
+                        
                       </span>
                     ) : (
                       <span className="wg-lk-add" title="add to canvas">

@@ -71,6 +71,13 @@ export const ExternalIcon = ({ size = 13 }: IconProps) => (
   </svg>
 )
 
+export const ArrowRightIcon = ({ size = 14 }: IconProps) => (
+  <svg {...base(size)} strokeWidth={2.2}>
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <path d="M14 6 L20 12 L14 18" />
+  </svg>
+)
+
 export const SpinnerIcon = ({ size = 13 }: IconProps) => (
   <svg
     {...base(size)}
