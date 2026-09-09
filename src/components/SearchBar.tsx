@@ -82,6 +82,7 @@ export function SearchBar({ onPick }: Props) {
       <div className="wg-search-input">
         <SearchIcon size={17} />
         <input
+          name="search bar"
           ref={inputRef}
           value={query}
           onChange={(e) => changeQuery(e.target.value)}
@@ -130,10 +131,10 @@ export function SearchBar({ onPick }: Props) {
           </div>
           <div className="wg-search-foot">
             <span>
-              <b>↑↓</b> navigate
+              <b>↑↓ (arrows)</b> navigate
             </span>
             <span>
-              <b>↵</b> add to graph
+              <b>↵ (enter)</b> add to graph
             </span>
             <span>
               <b>esc</b> dismiss
