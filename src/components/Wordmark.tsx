@@ -4,6 +4,7 @@ export function Wordmark() {
       <b>
         Wiki<i>Graph</i>
       </b>
+      {/* The line under "Wiki" */}
       <div className="rule" />
     </div>
   )

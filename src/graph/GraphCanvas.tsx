@@ -164,8 +164,10 @@ export function GraphCanvas({
                   </>
                 )}
                 <circle r={p.r} fill={selected ? '#a23b2e' : '#2b2620'} />
+
+                {/* Text displayed on a node in the graph */}
                 <text className="wg-node-label" y={p.r + 15} fill={selected ? '#a23b2e' : undefined}>
-                  {node.title}
+                  {node.title.replaceAll("_", " ")}
                 </text>
               </g>
             )

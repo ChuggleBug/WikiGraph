@@ -85,6 +85,7 @@ a:hover {
   left: 36px;
   top: 30px;
   z-index: 3;
+  user-select: none;
 }
 .wg-wordmark b {
   font-family: var(--wg-serif);
@@ -124,6 +125,7 @@ a:hover {
   gap: 10px;
   height: 50px;
   padding: 0 14px;
+  user-select: none;
 }
 .wg-search--open .wg-search-input {
   height: 52px;
@@ -244,6 +246,7 @@ a:hover {
   stroke: var(--wg-halo);
   stroke-width: 3.6px;
   pointer-events: none;
+  user-select: none;
 }
 
 /* ---------- detail panel ---------- */
