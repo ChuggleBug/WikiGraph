@@ -1,0 +1,126 @@
+import { useState } from 'react'
+import type { GraphNode } from '../types'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  ExternalIcon,
+  PlusIcon,
+  SpinnerIcon,
+} from './icons'
+
+interface Props {
+  node: GraphNode
+  nodeIds: Set<string>
+  pendingTitles: Set<string>
+  loadingAll: boolean
+  onAdd: (title: string) => void
+  onSelectExisting: (title: string) => void
+  onLoadAll: () => void
+  onClose: () => void
+}
+
+const wikiUrl = (title: string) =>
+  `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`
+
+export function DetailPanel({
+  node,
+  nodeIds,
+  pendingTitles,
+  loadingAll,
+  onAdd,
+  onSelectExisting,
+  onLoadAll,
+  onClose,
+}: Props) {
+  const [expanded, setExpanded] = useState(true)
+
+  const onCanvas = node.links.filter((l) => nodeIds.has(l)).length
+  const hiddenCount = node.outboundCount - node.links.length
+
+  return (
+    <div className="wg-panel wg-dp">
+      <button className="wg-dp-close" onClick={onClose} aria-label="Close panel">
+        <CloseIcon size={15} />
+      </button>
+
+      <h2 className="wg-serif">{node.title}</h2>
+
+      <div className="wg-dp-divider" />
+
+      <div className="wg-dp-stat">
+        <span className="n">{node.outboundCount}</span>
+        <span className="u">Outbound links</span>
+        <button
+          className="wg-dp-toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? 'Hide list' : 'Show list'}
+          <ChevronDownIcon size={12} />
+        </button>
+      </div>
+
+      {expanded && (
+        <div className="wg-lk">
+          <div className="wg-kicker">Linked articles</div>
+          <div className="wg-lk-list">
+            <div className="wg-lk-scroll">
+              {node.links.map((title) => {
+                const here = nodeIds.has(title)
+                const pending = pendingTitles.has(title)
+                return (
+                  <button
+                    key={title}
+                    className={`wg-lk-row${here ? ' wg-lk-row--on' : ''}`}
+                    disabled={pending}
+                    onClick={() =>
+                      here ? onSelectExisting(title) : onAdd(title)
+                    }
+                  >
+                    <span className="wg-lk-name">{title}</span>
+                    {pending ? (
+                      <span className="wg-lk-add">
+                        <SpinnerIcon size={12} />
+                      </span>
+                    ) : here ? (
+                      <span className="wg-lk-on" title="on canvas">
+                        <CheckIcon size={12} />
+                      </span>
+                    ) : (
+                      <span className="wg-lk-add" title="add to canvas">
+                        <PlusIcon size={12} />
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="wg-lk-foot">
+              <span>{onCanvas} on canvas</span>
+              <span>{node.links.length - onCanvas} not yet</span>
+              {hiddenCount > 0 &&
+                (loadingAll ? (
+                  <span>loading…</span>
+                ) : (
+                  <button onClick={onLoadAll}>show all {node.outboundCount}</button>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="wg-dp-actions">
+        <a
+          className="wg-btn-primary"
+          href={wikiUrl(node.title)}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open on Wikipedia
+          <ExternalIcon size={13} />
+        </a>
+      </div>
+    </div>
+  )
+}
