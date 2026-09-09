@@ -224,7 +224,7 @@ a:hover {
   stroke-width: 2.1;
   stroke-linecap: round;
   stroke-dasharray: 3 7;
-  animation: wg-march 1.0s linear infinite;
+  animation: wg-march 2s linear infinite;
 }
 .wg-edge--selected {
   stroke: var(--wg-accent);
