@@ -147,11 +147,13 @@ export function GraphCanvas({
             const len = Math.hypot(dx, dy) || 1
             const ux = dx / len
             const uy = dy / len
+            const nodeSelected = edge.source === selectedId || edge.target === selectedId
+
             return (
               <line
                 key={edge.key}
                 className={
-                  edge.kind === 'mutual' ? 'wg-edge--mutual' : 'wg-edge--directed'
+                  `${edge.kind === 'mutual' ? 'wg-edge--mutual' : 'wg-edge--directed'} ${nodeSelected ? 'wg-edge--selected' : ''}`
                 }
                 x1={s.x + ux * (s.r + 2)}
                 y1={s.y + uy * (s.r + 2)}
