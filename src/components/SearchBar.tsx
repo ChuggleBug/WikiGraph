@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ApiError, searchTitles } from '../api'
 import { SearchIcon, SpinnerIcon } from './icons'
+import titleTransform from '../titleTransform'
 
 interface Props {
   onPick: (title: string) => void
@@ -75,19 +76,9 @@ export function SearchBar({ onPick }: Props) {
     }
   }
 
-  useEffect(() => {
-    const onSlash = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement !== inputRef.current) {
-        e.preventDefault()
-        inputRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onSlash)
-    return () => window.removeEventListener('keydown', onSlash)
-  }, [])
-
   return (
-    <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`}>
+    // The entire search bar should make the input focused when clicked
+    <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`} onClick={() => inputRef.current?.focus()}>
       <div className="wg-search-input">
         <SearchIcon size={17} />
         <input
@@ -108,7 +99,6 @@ export function SearchBar({ onPick }: Props) {
             {titles.length} {titles.length === 1 ? 'result' : 'results'}
           </span>
         )}
-        {!open && <span className="wg-search-hint">/</span>}
       </div>
 
       {open && (
@@ -133,7 +123,7 @@ export function SearchBar({ onPick }: Props) {
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => pick(title)}
               >
-                <span style={{ flex: 1 }}>{title}</span>
+                <span style={{ flex: 1 }}>{titleTransform(title)}</span>
                 {i === active && <span className="ret">↵</span>}
               </button>
             ))}
