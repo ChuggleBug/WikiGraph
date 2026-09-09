@@ -221,14 +221,18 @@ a:hover {
 }
 .wg-edge--directed {
   stroke: #cabd9f;
-  stroke-width: 1.3;
+  stroke-width: 2.1;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 7;
-  animation: wg-march 1.1s linear infinite;
+  stroke-dasharray: 3 7;
+  /* stroke-dasharray: 0.8 7; */
+  /* animation: wg-march 1.1s linear infinite; */
+  animation: wg-march 1.0s linear infinite;
 }
+
+/* Sum of stroke-dasharray in wg-edge--directed (negative) */
 @keyframes wg-march {
   to {
-    stroke-dashoffset: -7.1;
+    stroke-dashoffset: -10;
   }
 }
 @media (prefers-reduced-motion: reduce) {
