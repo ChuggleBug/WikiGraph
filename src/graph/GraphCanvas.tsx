@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { GraphEdge, GraphNode } from '../types'
 import { useForceLayout } from './useForceLayout'
 import type { View } from './useView'
+import titleTransform from '../titleTransform'
 
 interface Props {
   nodes: GraphNode[]
@@ -43,7 +44,14 @@ export function GraphCanvas({
   }, [])
 
   const pan = useRef({ active: false, moved: false, x: 0, y: 0 })
-  const nodeDrag = useRef<{ id: string; moved: boolean } | null>(null)
+  const nodeDrag = useRef<{
+    id: string
+    moved: boolean
+    startX: number
+    startY: number
+    offX: number
+    offY: number
+  } | null>(null)
 
   const toGraph = (clientX: number, clientY: number) => {
     const rect = svgRef.current!.getBoundingClientRect()
@@ -76,24 +84,36 @@ export function GraphCanvas({
 
   const onNodePointerDown = (e: React.PointerEvent, id: string) => {
     e.stopPropagation()
-    nodeDrag.current = { id, moved: false }
-    ;(e.target as Element).setPointerCapture(e.pointerId)
     const p = toGraph(e.clientX, e.clientY)
-    drag.start(id, p.x, p.y)
+    const c = positions.get(id)
+    nodeDrag.current = {
+      id,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      offX: c ? c.x - p.x : 0,
+      offY: c ? c.y - p.y : 0,
+    }
+    ;(e.target as Element).setPointerCapture(e.pointerId)
   }
   const onNodePointerMove = (e: React.PointerEvent) => {
     const d = nodeDrag.current
     if (!d) return
-    d.moved = true
     const p = toGraph(e.clientX, e.clientY)
-    drag.move(d.id, p.x, p.y)
+    if (!d.moved) {
+      if (Math.hypot(e.clientX - d.startX, e.clientY - d.startY) <= DRAG_THRESHOLD) return
+      d.moved = true
+      drag.start(d.id, p.x + d.offX, p.y + d.offY)
+      return
+    }
+    drag.move(d.id, p.x + d.offX, p.y + d.offY)
   }
   const onNodePointerUp = (e: React.PointerEvent) => {
     const d = nodeDrag.current
     if (!d) return
     ;(e.target as Element).releasePointerCapture(e.pointerId)
-    drag.end(d.id)
-    if (!d.moved) onSelectNode(d.id)
+    if (d.moved) drag.end(d.id)
+    else onSelectNode(d.id)
     nodeDrag.current = null
   }
 
@@ -167,7 +187,7 @@ export function GraphCanvas({
 
                 {/* Text displayed on a node in the graph */}
                 <text className="wg-node-label" y={p.r + 15} fill={selected ? '#a23b2e' : undefined}>
-                  {node.title.replaceAll("_", " ")}
+                  {titleTransform(node.title)}
                 </text>
               </g>
             )

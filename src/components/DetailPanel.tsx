@@ -8,6 +8,7 @@ import {
   PlusIcon,
   SpinnerIcon,
 } from './icons'
+import titleTransform from '../titleTransform';
 
 interface Props {
   node: GraphNode
@@ -44,7 +45,7 @@ export function DetailPanel({
         <CloseIcon size={15} />
       </button>
 
-      <h2 className="wg-serif">{node.title}</h2>
+      <h2 className="wg-serif">{titleTransform(node.title)}</h2>
 
       <div className="wg-dp-divider" />
 
@@ -78,7 +79,7 @@ export function DetailPanel({
                       here ? onSelectExisting(title) : onAdd(title)
                     }
                   >
-                    <span className="wg-lk-name">{title}</span>
+                    <span className="wg-lk-name">{titleTransform(title)}</span>
                     {pending ? (
                       <span className="wg-lk-add">
                         <SpinnerIcon size={12} />
