@@ -113,6 +113,7 @@ a:hover {
   z-index: 4;
   padding: 0;
   overflow: hidden;
+  cursor: text;
 }
 .wg-search--open {
   width: 440px;
@@ -208,6 +209,8 @@ a:hover {
   inset: 0;
   z-index: 1;
   touch-action: none;
+  width: 100vw;
+  height: 100vh;
 }
 .wg-canvas--grabbing {
   cursor: grabbing;
