@@ -32,7 +32,7 @@ export default function App() {
   }, [showToast])
 
   const addTitle = useCallback(
-    async (title: string) => {
+    async (title: string, doSelect: boolean) => {
       if (store.nodeIds.has(title)) {
         store.select(title)
         return
@@ -41,7 +41,7 @@ export default function App() {
       setPending((prev) => new Set(prev).add(title))
       try {
         const { count, links } = await fetchLinks(title)
-        store.addArticle({ title, count, links })
+        store.addArticle({ title, count, links }, doSelect)
       } catch (err) {
         showToast(
           err instanceof ApiError ? err.message : `Couldn't add "${title}".`,
@@ -95,15 +95,18 @@ export default function App() {
       )}
 
       <Wordmark />
-      <SearchBar onPick={addTitle} />
 
+      {/* Search bars make the new node selected */}
+      <SearchBar onPick={(t) => addTitle(t, true)} />
+
+      {/* Detail panels do not make the new node selected */}
       {store.selectedNode && (
         <DetailPanel
           node={store.selectedNode}
           nodeIds={store.nodeIds}
           pendingTitles={pending}
           loadingAll={loadingAll}
-          onAdd={addTitle}
+          onAdd={(t) => addTitle(t, false)}
           onSelectExisting={store.select}
           onLoadAll={loadAllLinks}
           onClose={store.closePanel}
