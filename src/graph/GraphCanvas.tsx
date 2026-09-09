@@ -94,7 +94,7 @@ export function GraphCanvas({
       offX: c ? c.x - p.x : 0,
       offY: c ? c.y - p.y : 0,
     }
-    ;(e.target as Element).setPointerCapture(e.pointerId)
+      ; (e.target as Element).setPointerCapture(e.pointerId)
   }
   const onNodePointerMove = (e: React.PointerEvent) => {
     const d = nodeDrag.current
@@ -111,7 +111,7 @@ export function GraphCanvas({
   const onNodePointerUp = (e: React.PointerEvent) => {
     const d = nodeDrag.current
     if (!d) return
-    ;(e.target as Element).releasePointerCapture(e.pointerId)
+      ; (e.target as Element).releasePointerCapture(e.pointerId)
     if (d.moved) drag.end(d.id)
     else onSelectNode(d.id)
     nodeDrag.current = null
@@ -172,6 +172,8 @@ export function GraphCanvas({
                 transform={`translate(${p.x} ${p.y})`}
                 onPointerDown={(e) => onNodePointerDown(e, node.id)}
               >
+                {/* Invisible hit area — enlarges the clickable/draggable target */}
+                <circle r={p.r + 12} fill="transparent" />
                 {selected && (
                   <>
                     <circle r={p.r + 15} fill="#a23b2e" fillOpacity={0.12} />
