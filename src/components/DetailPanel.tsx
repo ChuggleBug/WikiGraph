@@ -25,6 +25,42 @@ interface Props {
 const wikiUrl = (title: string) =>
   `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`
 
+interface LinkRowProps {
+  title: string
+  here: boolean
+  pending: boolean
+  onAdd: (title: string) => void
+  onSelectExisting: (title: string) => void
+}
+
+function LinkRow({ title, here, pending, onAdd, onSelectExisting }: LinkRowProps) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      className={`wg-lk-row${here ? ' wg-lk-row--on' : ''}`}
+      disabled={pending}
+      onClick={() => (here ? onSelectExisting(title) : onAdd(title))}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span className="wg-lk-name">{titleTransform(title)}</span>
+      {pending ? (
+        <span className="wg-lk-add">
+          <SpinnerIcon size={12} />
+        </span>
+      ) : here ? (
+        <span className="wg-lk-on" title="on canvas">
+          {hovered ? <ArrowRightIcon size={12} /> : <CheckIcon size={12} />}
+        </span>
+      ) : (
+        <span className="wg-lk-add" title="add to canvas">
+          <PlusIcon size={12} />
+        </span>
+      )}
+    </button>
+  )
+}
+
 export function DetailPanel({
   node,
   nodeIds,
@@ -68,39 +104,16 @@ export function DetailPanel({
           <div className="wg-kicker">Linked articles</div>
           <div className="wg-lk-list">
             <div className="wg-lk-scroll">
-              {node.links.sort().map((title) => {
-                const here = nodeIds.has(title)
-                const pending = pendingTitles.has(title)
-                const [hovered, setHovered] = useState(false)
-                return (
-                  <button
-                    key={title}
-                    className={`wg-lk-row${here ? ' wg-lk-row--on' : ''}`}
-                    disabled={pending}
-                    onClick={() =>
-                      here ? onSelectExisting(title) : onAdd(title)
-                    }
-                    onMouseEnter={() => setHovered(true)} 
-                    onMouseLeave={() => setHovered(false)}
-                  >
-                    <span className="wg-lk-name">{titleTransform(title)}</span>
-                    {pending ? (
-                      <span className="wg-lk-add">
-                        <SpinnerIcon size={12} />
-                      </span>
-                    ) : here ? (
-                      <span className="wg-lk-on" title="on canvas">
-                        {hovered ? <ArrowRightIcon size={12} /> : <CheckIcon size={12} />}
-                        
-                      </span>
-                    ) : (
-                      <span className="wg-lk-add" title="add to canvas">
-                        <PlusIcon size={12} />
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
+              {node.links.sort().map((title) => (
+                <LinkRow
+                  key={title}
+                  title={title}
+                  here={nodeIds.has(title)}
+                  pending={pendingTitles.has(title)}
+                  onAdd={onAdd}
+                  onSelectExisting={onSelectExisting}
+                />
+              ))}
             </div>
             <div className="wg-lk-foot">
               <span>{onCanvas} on canvas</span>
