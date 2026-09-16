@@ -192,13 +192,18 @@ a:hover {
 }
 .wg-search-foot {
   display: flex;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: baseline;
   padding: 10px 15px;
   border-top: 1px solid #eee6d4;
+}
+.wg-search-foot-help {
+  display: flex;
+  gap: 16px;
   font-size: 10.5px;
   color: var(--wg-faint);
 }
-.wg-search-foot b {
+.wg-search-foot-help b {
   font-weight: 600;
   color: #6b6155;
 }

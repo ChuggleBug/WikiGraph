@@ -94,12 +94,6 @@ export function SearchBar({ onPick }: Props) {
           aria-controls={listId}
           aria-autocomplete="list"
         />
-        {status === 'loading' && <SpinnerIcon size={14} />}
-        {open && status === 'done' && (
-          <span className="wg-search-count">
-            {titles.length} {titles.length === 1 ? 'result' : 'results'}
-          </span>
-        )}
       </div>
 
       {open && (
@@ -130,15 +124,26 @@ export function SearchBar({ onPick }: Props) {
             ))}
           </div>
           <div className="wg-search-foot">
-            <span>
-              <b>↑↓ (arrows)</b> navigate
-            </span>
-            <span>
-              <b>↵ (enter)</b> add to graph
-            </span>
-            <span>
-              <b>esc</b> dismiss
-            </span>
+            <div className="wg-search-foot-help">
+              <span>
+                <b>↑↓ (arrows)</b> navigate
+              </span>
+              <span>
+                <b>↵ (enter)</b> add to graph
+              </span>
+              <span>
+                <b>esc</b> dismiss
+              </span>
+            </div>
+            {/* N results display */}
+            <div>
+              {status === 'loading' && <SpinnerIcon size={14} />}
+              {open && status === 'done' && (
+                <span className="wg-search-count">
+                  {titles.length} {titles.length === 1 ? 'result' : 'results'}
+                </span>
+              )}
+            </div>
           </div>
         </>
       )}
