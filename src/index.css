@@ -145,6 +145,15 @@ a:hover {
 .wg-search-input input::placeholder {
   color: var(--wg-placeholder);
 }
+.wg-search-input button {
+  border: transparent;
+  border-left: 1px solid #ddd3bd;
+  padding-left: 14px;
+  background-color: transparent;
+  height: 100%;
+  font-size: 10.5px;
+  color: var(--wg-faint);
+}
 .wg-search-hint {
   font-size: 11px;
   color: var(--wg-placeholder);

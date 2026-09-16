@@ -77,8 +77,7 @@ export function SearchBar({ onPick }: Props) {
   }
 
   return (
-    // The entire search bar should make the input focused when clicked
-    <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`} onClick={() => inputRef.current?.focus()}>
+    <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`}>
       <div className="wg-search-input">
         <SearchIcon size={17} />
         <input
@@ -89,11 +88,15 @@ export function SearchBar({ onPick }: Props) {
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 120)}
           onKeyDown={onKeyDown}
-          placeholder="Search Wikipedia articles…"
+          placeholder="Search Wikipedia articles..."
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
         />
+        
+        <button onClick={() => {}}>
+          <span>URL Link Mode</span>
+        </button>
       </div>
 
       {open && (
