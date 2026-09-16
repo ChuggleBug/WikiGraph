@@ -57,7 +57,7 @@ export interface LinksResult {
  */
 export function fetchLinks(
   title: string,
-  all = false,
+  all = true,
   signal?: AbortSignal,
 ): Promise<LinksResult> {
   return getJson<LinksResult>('/links', { title, all: String(all) }, signal)
