@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { ApiError, searchTitles } from '../api'
 import { SearchIcon, SpinnerIcon } from './icons'
 import titleTransform from '../titleTransform'
@@ -16,6 +16,7 @@ export function SearchBar({ onPick }: Props) {
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
   const [active, setActive] = useState(0)
+  const [searchedQuery, setSearchedQuery] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listId = useId()
 
@@ -26,38 +27,34 @@ export function SearchBar({ onPick }: Props) {
     if (!value.trim()) {
       setTitles([])
       setStatus('idle')
+      setSearchedQuery(null)
     }
   }
 
-  useEffect(() => {
+  const runSearch = async () => {
     if (!trimmed) return
-    const ctrl = new AbortController()
-    const timer = setTimeout(async () => {
-      setStatus('loading')
-      try {
-        const res = await searchTitles(trimmed, ctrl.signal)
-        setTitles(res.titles)
-        setActive(0)
-        setStatus('done')
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        setError(err instanceof ApiError ? err.message : 'Search failed')
-        setStatus('error')
-      }
-    }, 200)
-    return () => {
-      ctrl.abort()
-      clearTimeout(timer)
+    setStatus('loading')
+    setSearchedQuery(trimmed)
+    try {
+      const res = await searchTitles(trimmed)
+      setTitles(res.titles)
+      setActive(0)
+      setStatus('done')
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Search failed')
+      setStatus('error')
     }
-  }, [trimmed])
+  }
 
   const open = focused && trimmed.length > 0
+  const stale = searchedQuery !== trimmed
 
   const pick = (title: string) => {
     onPick(title)
     setQuery('')
     setTitles([])
     setStatus('idle')
+    setSearchedQuery(null)
     inputRef.current?.blur()
   }
 
@@ -71,14 +68,24 @@ export function SearchBar({ onPick }: Props) {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setActive((i) => Math.max(i - 1, 0))
-    } else if (e.key === 'Enter' && titles[active]) {
-      pick(titles[active])
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (searchedQuery === trimmed && status !== 'loading') {
+        if (titles[active]) pick(titles[active])
+      } else {
+        void runSearch()
+      }
     }
   }
 
   return (
     <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`}>
-      <div className="wg-search-input">
+      <div
+        className="wg-search-input"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) inputRef.current?.focus()
+        }}
+      >
         <SearchIcon size={17} />
         <input
           name="search bar"
@@ -102,37 +109,40 @@ export function SearchBar({ onPick }: Props) {
       {open && (
         <>
           <div className="wg-results" id={listId} role="listbox">
-            {status === 'error' && (
+            {!stale && status === 'error' && (
               <div className="wg-result wg-result--empty">{error}</div>
             )}
-            {status === 'done' && titles.length === 0 && (
+            {!stale && status === 'done' && titles.length === 0 && (
               <div className="wg-result wg-result--empty">
                 No matching articles.
               </div>
             )}
-            {titles.map((title, i) => (
-              <button
-                key={title}
-                type="button"
-                role="option"
-                aria-selected={i === active}
-                className="wg-result"
-                onMouseEnter={() => setActive(i)}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pick(title)}
-              >
-                <span style={{ flex: 1 }}>{titleTransform(title)}</span>
-                {i === active && <span className="ret">↵</span>}
-              </button>
-            ))}
+            {!stale &&
+              titles.map((title, i) => (
+                <button
+                  key={title}
+                  type="button"
+                  role="option"
+                  aria-selected={i === active}
+                  className="wg-result"
+                  onMouseEnter={() => setActive(i)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pick(title)}
+                >
+                  <span style={{ flex: 1 }}>{titleTransform(title)}</span>
+                  {i === active && <span className="ret">↵</span>}
+                </button>
+              ))}
           </div>
           <div className="wg-search-foot">
             <div className="wg-search-foot-help">
+              {!stale && (
+                <span>
+                  <b>↑↓ (arrows)</b> navigate
+                </span>
+              )}
               <span>
-                <b>↑↓ (arrows)</b> navigate
-              </span>
-              <span>
-                <b>↵ (enter)</b> add to graph
+                <b>↵ (enter)</b> {stale ? 'search' : 'add to graph'}
               </span>
               <span>
                 <b>esc</b> dismiss
@@ -141,7 +151,7 @@ export function SearchBar({ onPick }: Props) {
             {/* N results display */}
             <div>
               {status === 'loading' && <SpinnerIcon size={14} />}
-              {open && status === 'done' && (
+              {!stale && status === 'done' && (
                 <span className="wg-search-count">
                   {titles.length} {titles.length === 1 ? 'result' : 'results'}
                 </span>
