@@ -140,7 +140,7 @@ a:hover {
   height: 50px;
   padding: 0 14px;
   user-select: none;
-  border-bottom: 1px solid var(--wg-border-soft);
+  border-bottom: 0px;
 }
 .wg-search-input input {
   flex: 1;
@@ -149,6 +149,9 @@ a:hover {
   background: transparent;
   font: inherit;
   color: var(--wg-ink);
+}
+.wg-search-input:focus-within {
+  border-bottom: 1px solid var(--wg-border-soft);
 }
 .wg-search-input input::placeholder {
   color: var(--wg-placeholder);
