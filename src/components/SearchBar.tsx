@@ -85,6 +85,9 @@ export function SearchBar({ onPick }: Props) {
   // Input text was changed after search
   const stale = searchedQuery !== trimmed
 
+  // Any changes made to search bar after submission
+  const submissionChanged = open && !stale && (status !== 'idle');
+
   const pick = async (title: string) => {
     setStatus('loading')
     const added = await onPick(title)
@@ -151,7 +154,8 @@ export function SearchBar({ onPick }: Props) {
 
   return (
     <div className={`wg-panel wg-search${open ? ' wg-search--open' : ''}`}>
-      <div style={{ position: 'fixed', zIndex: '50', display: 'flex', gap: '5', flexDirection: 'column', right: '50px' }}>
+      {/* Debug block showing internal state */}
+      {/* <div style={{ position: 'fixed', zIndex: '50', display: 'flex', gap: '5', flexDirection: 'column', right: '50px' }}>
         <span>mode: {mode}</span>
         <span>query: {query}</span>
         <span>focused: {focused ? "true" : 'false'}</span>
@@ -163,7 +167,8 @@ export function SearchBar({ onPick }: Props) {
         <span>trimmed: {trimmed}</span>
         <span>open: {open ? "true" : 'false'}</span>
         <span>stale: {stale ? "true" : 'false'}</span>
-      </div>
+        <span>submissionChanged: {submissionChanged ? "true" : 'false'}</span>
+      </div> */}
 
       {/* Top Search Bar segment */}
       <div
@@ -193,7 +198,7 @@ export function SearchBar({ onPick }: Props) {
             blurTimeoutRef.current = setTimeout(() => {
               blurTimeoutRef.current = null
               setFocused(false)
-            }, 120)
+            }, 10)
           }}
           onKeyDown={onKeyDown}
           placeholder={
@@ -223,10 +228,10 @@ export function SearchBar({ onPick }: Props) {
             </div>
           )}
 
-          <div className='wg-search-foot' results-shown={`${(open && stale)}`}>
+          <div className='wg-search-foot' results-shown={`${submissionChanged}`}>
             <div className='wg-search-foot-help'>
               <span>
-                <b>↵ (enter)</b> {stale ? 'search' : 'add to graph'}
+                <b>↵ (enter)</b> add to graph
               </span>
               <span>
                 <b>esc</b> dismiss
@@ -264,15 +269,15 @@ export function SearchBar({ onPick }: Props) {
                 </button>
               ))}
           </div>
-          <div className="wg-search-foot" results-shown={`${(open && stale)}`}>
+          <div className="wg-search-foot" results-shown={`${(submissionChanged)}`}>
             <div className="wg-search-foot-help">
-              {!stale && (
+              {!stale && (status !== 'error') && (
                 <span>
                   <b>↑↓ (arrows)</b> navigate
                 </span>
               )}
               <span>
-                <b>↵ (enter)</b> {stale ? 'search' : 'add to graph'}
+                <b>↵ (enter)</b> {stale && (status !== 'error') ? 'search' : 'add to graph'}
               </span>
               <span>
                 <b>esc</b> dismiss
@@ -290,109 +295,6 @@ export function SearchBar({ onPick }: Props) {
           </div>
         </>
       )}
-
-      {/* {open &&
-        <>
-          <div>
-            {stale && <div className="wg-results">
-              {status === 'error' && (
-                <div className="wg-result wg-result--empty">{error}</div>
-              )}
-
-              {status === 'loading' && mode === 'search' && <div>
-                </div>
-              }
-
-              {status === 'done' && mode === 'search' && <div>
-                </div>
-              }
-              {status === 'done' && mode === 'link' && <div>
-                </div>
-              }
-            </div>}
-            <div className="wg-search-foot" results-shown={`${!stale}`}>
-              <div className="wg-search-foot-help">
-                {!stale && (
-                  <span>
-                    <b>↑↓ (arrows)</b> navigate
-                  </span>
-                )}
-
-                <span>
-                  <b>↵ (enter)</b> {stale ? 'search' : 'add to graph'}
-                </span>
-                <span>
-                  <b>esc</b> dismiss
-                </span>
-              </div>
-
-              <div>
-                {status === 'loading' && <SpinnerIcon size={14} />}
-                {!stale && status === 'done' && (
-                  <span className="wg-search-count">
-                    {titles.length} {titles.length === 1 ? 'result' : 'results'}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      } */}
-
-      {/* {open && mode === 'search' && (
-        <>
-          <div className="wg-results" id={listId} role="listbox">
-            {!stale && status === 'error' && (
-              <div className="wg-result wg-result--empty">error {error}</div>
-            )}
-            {!stale && status === 'done' && titles.length === 0 && (
-              <div className="wg-result wg-result--empty">
-                No matching articles.
-              </div>
-            )}
-            {!stale &&
-              titles.map((title, i) => (
-                <button
-                  key={title}
-                  type="button"
-                  role="option"
-                  aria-selected={i === active}
-                  className="wg-result"
-                  onMouseEnter={() => setActive(i)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => void pick(title)}
-                >
-                  <span style={{ flex: 1 }}>{titleTransform(title)}</span>
-                  {i === active && <span className="ret">↵</span>}
-                </button>
-              ))}
-          </div>
-          <div className="wg-search-foot">
-            <div className="wg-search-foot-help">
-              {!stale && (
-                <span>
-                  <b>↑↓ (arrows)</b> navigate
-                </span>
-              )}
-              <span>
-                <b>↵ (enter)</b> {stale ? 'search' : 'add to graph'}
-              </span>
-              <span>
-                <b>esc</b> dismiss
-              </span>
-            </div>
-            
-            <div>
-              {status === 'loading' && <SpinnerIcon size={14} />}
-              {!stale && status === 'done' && (
-                <span className="wg-search-count">
-                  {titles.length} {titles.length === 1 ? 'result' : 'results'}
-                </span>
-              )}
-            </div>
-          </div>
-        </>
-      )} */}
 
     </div >
   )

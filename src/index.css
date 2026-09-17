@@ -129,8 +129,6 @@ a:hover {
   cursor: text;
 }
 .wg-search--open {
-  border-bottom: 1px solid var(--wg-border-soft);
-  width: 440px;
   box-shadow:
     0 1px 2px rgba(var(--wg-shadow-color), 0.04),
     0 24px 50px -20px rgba(var(--wg-shadow-color), 0.34);
@@ -142,10 +140,6 @@ a:hover {
   height: 50px;
   padding: 0 14px;
   user-select: none;
-}
-.wg-search--open .wg-search-input {
-  height: 52px;
-  padding: 0 15px;
   border-bottom: 1px solid var(--wg-border-soft);
 }
 .wg-search-input input {
@@ -231,10 +225,10 @@ a:hover {
   justify-content: space-between;
   align-items: baseline;
   padding: 10px 15px;
-  border-top: 1px solid var(--wg-border-soft);
+  border-top: 0px; 
 }
 .wg-search-foot[results-shown="true"] {
-  border-top: 0px
+  border-top: 1px solid var(--wg-border-soft);
 }
 .wg-search-foot-help {
   display: flex;
