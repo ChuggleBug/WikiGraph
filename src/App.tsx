@@ -32,20 +32,22 @@ export default function App() {
   }, [showToast])
 
   const addTitle = useCallback(
-    async (title: string, doSelect: boolean) => {
+    async (title: string, doSelect: boolean): Promise<boolean> => {
       if (store.nodeIds.has(title)) {
         store.select(title)
-        return
+        return true
       }
-      if (pending.has(title)) return
+      if (pending.has(title)) return false
       setPending((prev) => new Set(prev).add(title))
       try {
         const { count, links } = await fetchLinks(title)
         store.addArticle({ title, count, links }, doSelect)
+        return true
       } catch (err) {
         showToast(
           err instanceof ApiError ? err.message : `Couldn't add "${title}".`,
         )
+        return false
       } finally {
         setPending((prev) => {
           const next = new Set(prev)

@@ -129,6 +129,7 @@ a:hover {
   cursor: text;
 }
 .wg-search--open {
+  border-bottom: 1px solid var(--wg-border-soft);
   width: 440px;
   box-shadow:
     0 1px 2px rgba(var(--wg-shadow-color), 0.04),
@@ -159,6 +160,8 @@ a:hover {
   color: var(--wg-placeholder);
 }
 .wg-search-input button {
+  display: grid;  
+  align-items: center;
   border: transparent;
   border-left: 1px solid var(--wg-border-strong);
   padding-left: 14px;
@@ -167,6 +170,13 @@ a:hover {
   font-size: var(--wg-text-xs);
   color: var(--wg-faint);
 }
+.wg-search-input button span {
+  grid-area: 1 / 1;
+}
+.wg-search-input button span[data-hidden="true"] {
+  visibility: hidden;
+}
+
 .wg-search-hint {
   font-size: 11px;
   color: var(--wg-placeholder);
@@ -180,7 +190,6 @@ a:hover {
   white-space: nowrap;
 }
 .wg-results {
-  padding: 2px 0 4px;
   max-height: 320px;
   overflow-y: auto;
 }
@@ -223,6 +232,9 @@ a:hover {
   align-items: baseline;
   padding: 10px 15px;
   border-top: 1px solid var(--wg-border-soft);
+}
+.wg-search-foot[results-shown="true"] {
+  border-top: 0px
 }
 .wg-search-foot-help {
   display: flex;
