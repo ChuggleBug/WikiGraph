@@ -521,6 +521,7 @@ a:hover {
   width: 100%;
   color: var(--wg-muted);
   font-size: var(--wg-text-sm);
+  user-select: none;
 }
 .wg-legend span {
   display: flex;
