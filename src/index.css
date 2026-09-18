@@ -47,12 +47,10 @@ body,
 body {
   margin: 0;
   font-size: var(--wg-text-base);
-  background: radial-gradient(
-    120% 90% at 50% 40%,
-    #fbf9f4 0%,
-    #f5f0e5 78%,
-    #efe8d8 100%
-  );
+  background: radial-gradient(120% 90% at 50% 40%,
+      #fbf9f4 0%,
+      #f5f0e5 78%,
+      #efe8d8 100%);
 }
 
 button {
@@ -63,6 +61,7 @@ button {
 a {
   color: var(--wg-accent);
 }
+
 a:hover {
   color: var(--wg-accent-dark);
 }
@@ -100,6 +99,7 @@ a:hover {
   z-index: 3;
   user-select: none;
 }
+
 .wg-wordmark b {
   font-family: var(--wg-serif);
   font-size: 23px;
@@ -107,9 +107,11 @@ a:hover {
   letter-spacing: 0.01em;
   color: var(--wg-ink);
 }
+
 .wg-wordmark b i {
   color: var(--wg-accent);
 }
+
 .wg-wordmark .rule {
   width: 34px;
   height: 2px;
@@ -128,11 +130,13 @@ a:hover {
   overflow: hidden;
   cursor: text;
 }
+
 .wg-search--open {
   box-shadow:
     0 1px 2px rgba(var(--wg-shadow-color), 0.04),
     0 24px 50px -20px rgba(var(--wg-shadow-color), 0.34);
 }
+
 .wg-search-input {
   display: flex;
   align-items: center;
@@ -142,6 +146,7 @@ a:hover {
   user-select: none;
   border-bottom: 0px;
 }
+
 .wg-search-input input {
   flex: 1;
   border: 0;
@@ -150,14 +155,17 @@ a:hover {
   font: inherit;
   color: var(--wg-ink);
 }
+
 .wg-search-input:focus-within {
   border-bottom: 1px solid var(--wg-border-soft);
 }
+
 .wg-search-input input::placeholder {
   color: var(--wg-placeholder);
 }
+
 .wg-search-input button {
-  display: grid;  
+  display: grid;
   align-items: center;
   border: transparent;
   border-left: 1px solid var(--wg-border-strong);
@@ -167,9 +175,11 @@ a:hover {
   font-size: var(--wg-text-xs);
   color: var(--wg-faint);
 }
+
 .wg-search-input button span {
   grid-area: 1 / 1;
 }
+
 .wg-search-input button span[data-hidden="true"] {
   visibility: hidden;
 }
@@ -181,15 +191,18 @@ a:hover {
   border-radius: 5px;
   padding: 2px 6px;
 }
+
 .wg-search-count {
   font-size: 11px;
   color: var(--wg-placeholder);
   white-space: nowrap;
 }
+
 .wg-results {
   max-height: 320px;
   overflow-y: auto;
 }
+
 .wg-result {
   width: 100%;
   display: flex;
@@ -203,42 +216,50 @@ a:hover {
   color: var(--wg-ink);
   text-align: left;
 }
+
 .wg-result:hover,
 .wg-result[aria-selected="true"] {
   background: var(--wg-surface-hover);
   border-left-color: var(--wg-accent);
 }
+
 .wg-result .ret {
   font-size: 11px;
   color: var(--wg-accent);
 }
+
 .wg-result--empty {
   padding: 14px 15px;
   font-size: 12.5px;
   border-left-color: transparent;
   background: transparent;
 }
+
 /* Acts as override to default */
 .wg-result--empty:hover {
   border-left-color: transparent;
   background: transparent;
 }
+
 .wg-search-foot {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   padding: 10px 15px;
-  border-top: 0px; 
+  border-top: 0px;
 }
+
 .wg-search-foot[results-shown="true"] {
   border-top: 1px solid var(--wg-border-soft);
 }
+
 .wg-search-foot-help {
   display: flex;
   gap: 16px;
   font-size: var(--wg-text-xs);
   color: var(--wg-faint);
 }
+
 .wg-search-foot-help b {
   font-weight: 600;
   color: var(--wg-ink-secondary);
@@ -253,13 +274,16 @@ a:hover {
   width: 100vw;
   height: 100vh;
 }
+
 .wg-canvas--grabbing {
   cursor: grabbing;
 }
+
 .wg-edge--mutual {
   stroke: #c9bda6;
   stroke-width: 1.4;
 }
+
 .wg-edge--directed {
   stroke: #cabd9f;
   stroke-width: 2.1;
@@ -267,6 +291,7 @@ a:hover {
   stroke-dasharray: 3 7;
   animation: wg-march 2s linear infinite;
 }
+
 .wg-edge--selected {
   stroke: var(--wg-accent);
 }
@@ -277,14 +302,17 @@ a:hover {
     stroke-dashoffset: -10;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .wg-edge--directed {
     animation: none;
   }
 }
+
 .wg-node {
   cursor: pointer;
 }
+
 .wg-node-label {
   font-family: var(--wg-sans);
   font-size: 12.5px;
@@ -309,8 +337,51 @@ a:hover {
   display: flex;
   flex-direction: column;
   padding: 20px 22px 18px;
+  opacity: 0;
+  transform: translateX(8px);
+  animation: wg-dp-fade-out 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-.wg-dp-close {
+.wg-dp--open {
+  animation: wg-dp-fade-in 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* Derived from https://prismic.io/blog/css-animation-examples#1-fadein-and-slideup-on-page-load */
+@keyframes wg-dp-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes wg-dp-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Skip the animation and show the card immediately. */
+  .wg-dp {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+  .wg-dp--open {
+    opacity: 1;
+  }
+}
+
+.wg-dp--open {
+  opacity: 1;
+}
+
+.wg-dp-close-btn {
   position: absolute;
   right: 12px;
   top: 12px;
@@ -324,10 +395,12 @@ a:hover {
   align-items: center;
   justify-content: center;
 }
-.wg-dp-close:hover {
+
+.wg-dp-close-btn:hover {
   background: var(--wg-surface-hover);
   color: var(--wg-ink-soft);
 }
+
 .wg-dp h2 {
   margin: 4px 40px 0 0;
   font-family: var(--wg-serif);
@@ -335,21 +408,25 @@ a:hover {
   font-weight: 600;
   line-height: 1.15;
 }
+
 .wg-dp-divider {
   height: 1px;
   background: var(--wg-line-soft);
   margin: 15px 0 13px;
 }
+
 .wg-dp-stat {
   display: flex;
   align-items: flex-end;
   gap: 10px;
 }
+
 .wg-dp-stat .n {
   font-family: var(--wg-serif);
   font-size: 30px;
   line-height: 1;
 }
+
 .wg-dp-stat .u {
   font-size: var(--wg-text-xs);
   letter-spacing: 0.16em;
@@ -358,6 +435,7 @@ a:hover {
   font-weight: 600;
   padding-bottom: 3px;
 }
+
 .wg-dp-toggle {
   margin-left: auto;
   display: inline-flex;
@@ -372,12 +450,15 @@ a:hover {
   font-weight: 500;
   color: var(--wg-ink-secondary);
 }
+
 .wg-dp-toggle svg {
   transition: transform 0.15s;
 }
+
 .wg-dp-toggle[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
+
 .wg-lk {
   margin-top: 16px;
   border-top: 1px solid var(--wg-line-soft);
@@ -386,6 +467,7 @@ a:hover {
   flex-direction: column;
   min-height: 0;
 }
+
 .wg-lk-list {
   margin-top: 8px;
   overflow: hidden;
@@ -395,10 +477,12 @@ a:hover {
   display: flex;
   flex-direction: column;
 }
+
 .wg-lk-scroll {
   overflow-y: auto;
   max-height: 40vh;
 }
+
 .wg-lk-row {
   width: 100%;
   display: flex;
@@ -413,32 +497,40 @@ a:hover {
   color: #3d372f;
   text-align: left;
 }
+
 .wg-lk-row:last-child {
   border-bottom: 0;
 }
+
 .wg-lk-row:hover {
   background: var(--wg-surface-hover);
 }
+
 .wg-lk-row:disabled {
   cursor: default;
 }
+
 .wg-lk-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .wg-lk-row--on .wg-lk-name {
   color: var(--wg-ink-secondary);
 }
+
 .wg-lk-on {
   display: flex;
   color: #558a42;
 }
+
 .wg-lk-add {
   display: flex;
   color: var(--wg-accent);
 }
+
 .wg-lk-foot {
   padding: 8px 12px;
   border-top: 1px solid var(--wg-border-soft);
@@ -448,6 +540,7 @@ a:hover {
   display: flex;
   gap: 14px;
 }
+
 .wg-lk-foot button {
   border: 0;
   background: transparent;
@@ -456,11 +549,13 @@ a:hover {
   font-size: var(--wg-text-xs);
   padding: 0;
 }
+
 .wg-dp-actions {
   margin-top: 16px;
   display: flex;
   gap: 9px;
 }
+
 .wg-btn-primary {
   flex: 1;
   height: 40px;
@@ -486,6 +581,7 @@ a:hover {
   display: flex;
   flex-direction: column;
 }
+
 .wg-icbtn {
   width: 44px;
   height: 44px;
@@ -497,12 +593,15 @@ a:hover {
   border: 0;
   border-radius: 8px;
 }
+
 .wg-icbtn:hover {
   background: var(--wg-surface-hover);
 }
+
 .wg-icbtn--danger {
   color: var(--wg-accent);
 }
+
 .wg-controls .sep {
   height: 1px;
   background: var(--wg-line-soft);
@@ -523,11 +622,13 @@ a:hover {
   font-size: var(--wg-text-sm);
   user-select: none;
 }
+
 .wg-legend span {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 @media (max-width: 900px) {
   .wg-legend {
     display: none;
@@ -560,6 +661,7 @@ a:hover {
   color: var(--wg-muted);
   pointer-events: none;
 }
+
 .wg-empty h1 {
   font-family: var(--wg-serif);
   font-weight: 500;
@@ -567,6 +669,7 @@ a:hover {
   color: var(--wg-ink);
   margin: 0 0 8px;
 }
+
 .wg-empty p {
   margin: 0;
 }

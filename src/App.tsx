@@ -8,6 +8,7 @@ import { Wordmark } from './components/Wordmark'
 import { GraphCanvas } from './graph/GraphCanvas'
 import { useGraphStore } from './graph/useGraphStore'
 import { useView } from './graph/useView'
+import type { GraphNode } from './types';
 
 export default function App() {
   const store = useGraphStore()
@@ -17,6 +18,12 @@ export default function App() {
   const [loadingAll, setLoadingAll] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
+  const [lastNode, setLastNode] = useState<GraphNode | null>(store.selectedNode)
+
+
+  useEffect(() => {
+    if (store.selectedNode) setLastNode(store.selectedNode)
+  }, [store.selectedNode])
 
   const showToast = useCallback((message: string) => {
     setToast(message)
@@ -101,19 +108,17 @@ export default function App() {
       {/* Search bars make the new node selected */}
       <SearchBar onPick={(t) => addTitle(t, true)} />
 
-      {/* Detail panels do not make the new node selected */}
-      {store.selectedNode && (
-        <DetailPanel
-          node={store.selectedNode}
-          nodeIds={store.nodeIds}
-          pendingTitles={pending}
-          loadingAll={loadingAll}
-          onAdd={(t) => addTitle(t, false)}
-          onSelectExisting={store.select}
-          onLoadAll={loadAllLinks}
-          onClose={store.closePanel}
-        />
-      )}
+      {lastNode && <DetailPanel
+        open={!!store.selectedNode}
+        node={lastNode}
+        nodeIds={store.nodeIds}
+        pendingTitles={pending}
+        loadingAll={loadingAll}
+        onAdd={(t) => addTitle(t, false)}
+        onSelectExisting={store.select}
+        onLoadAll={loadAllLinks}
+        onClose={store.closePanel}
+      />}
 
       <ViewControls
         onZoomIn={() => zoomCenter(1.2)}

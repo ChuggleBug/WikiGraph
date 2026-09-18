@@ -12,6 +12,7 @@ import {
 import titleTransform from '../titleTransform';
 
 interface Props {
+  open: boolean
   node: GraphNode
   nodeIds: Set<string>
   pendingTitles: Set<string>
@@ -62,6 +63,7 @@ function LinkRow({ title, here, pending, onAdd, onSelectExisting }: LinkRowProps
 }
 
 export function DetailPanel({
+  open,
   node,
   nodeIds,
   pendingTitles,
@@ -77,69 +79,73 @@ export function DetailPanel({
   const hiddenCount = node.outboundCount - node.links.length
 
   return (
-    <div className="wg-panel wg-dp">
-      <button className="wg-dp-close" onClick={onClose} aria-label="Close panel">
-        <CloseIcon size={15} />
-      </button>
-
-      <h2 className="wg-serif">{titleTransform(node.title)}</h2>
-
-      <div className="wg-dp-divider" />
-
-      <div className="wg-dp-stat">
-        <span className="n">{node.outboundCount}</span>
-        <span className="u">Outbound links</span>
-        <button
-          className="wg-dp-toggle"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? 'Hide list' : 'Show list'}
-          <ChevronDownIcon size={12} />
+    <>
+      {/* Debug status */}
+      {/* <div style={{ position: 'fixed' }}>Detail Panel Open: {`${open}`}</div> */}
+      <div className={`wg-panel wg-dp ${open ?  'wg-dp--open' : ''}`}>
+        <button className="wg-dp-close-btn" onClick={onClose} aria-label="Close panel">
+          <CloseIcon size={15} />
         </button>
-      </div>
 
-      {expanded && (
-        <div className="wg-lk">
-          <div className="wg-kicker">Linked articles</div>
-          <div className="wg-lk-list">
-            <div className="wg-lk-scroll">
-              {node.links.sort().map((title) => (
-                <LinkRow
-                  key={title}
-                  title={title}
-                  here={nodeIds.has(title)}
-                  pending={pendingTitles.has(title)}
-                  onAdd={onAdd}
-                  onSelectExisting={onSelectExisting}
-                />
-              ))}
-            </div>
-            <div className="wg-lk-foot">
-              <span>{onCanvas} on canvas</span>
-              <span>{node.links.length - onCanvas} not yet</span>
-              {hiddenCount > 0 &&
-                (loadingAll ? (
-                  <span>loading…</span>
-                ) : (
-                  <button onClick={onLoadAll}>show all {node.outboundCount}</button>
+        <h2 className="wg-serif">{titleTransform(node.title)}</h2>
+
+        <div className="wg-dp-divider" />
+
+        <div className="wg-dp-stat">
+          <span className="n">{node.outboundCount}</span>
+          <span className="u">Outbound links</span>
+          <button
+            className="wg-dp-toggle"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? 'Hide list' : 'Show list'}
+            <ChevronDownIcon size={12} />
+          </button>
+        </div>
+
+        {expanded && (
+          <div className="wg-lk">
+            <div className="wg-kicker">Linked articles</div>
+            <div className="wg-lk-list">
+              <div className="wg-lk-scroll">
+                {node.links.sort().map((title) => (
+                  <LinkRow
+                    key={title}
+                    title={title}
+                    here={nodeIds.has(title)}
+                    pending={pendingTitles.has(title)}
+                    onAdd={onAdd}
+                    onSelectExisting={onSelectExisting}
+                  />
                 ))}
+              </div>
+              <div className="wg-lk-foot">
+                <span>{onCanvas} on canvas</span>
+                <span>{node.links.length - onCanvas} not yet</span>
+                {hiddenCount > 0 &&
+                  (loadingAll ? (
+                    <span>loading…</span>
+                  ) : (
+                    <button onClick={onLoadAll}>show all {node.outboundCount}</button>
+                  ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="wg-dp-actions">
-        <a
-          className="wg-btn-primary"
-          href={wikiUrl(node.title)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Open on Wikipedia
-          <ExternalIcon size={13} />
-        </a>
+        <div className="wg-dp-actions">
+          <a
+            className="wg-btn-primary"
+            href={wikiUrl(node.title)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open on Wikipedia
+            <ExternalIcon size={13} />
+          </a>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
