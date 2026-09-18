@@ -15,12 +15,12 @@ async function getJson<T>(
   let res: Response
   try {
     res = await fetch(`${BASE}${path}${qs ? `?${qs}` : ''}`, {
-      signal,
+      signal: signal ?? AbortSignal.timeout(5000),
       headers: { accept: 'application/json' },
     })
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
-    throw new ApiError('Could not reach the WikiGraph server')
+    throw new ApiError('Could not reach server')
   }
   const data = (await res.json().catch(() => null)) as
     | (T & { error?: string })
