@@ -64,34 +64,41 @@ function upsert(nodes: GraphNode[], article: ArticlePayload): GraphNode[] {
 }
 
 function reducer(state: GraphState, action: Action): GraphState {
-  switch (action.type) {
-    case 'add': {
-      const nodes = upsert(state.nodes, action.article)
-      return {
-        nodes,
-        edges: computeEdges(nodes),
-        selectedId: action.select ? action.article.title : state.selectedId,
+  function reducer_wrap() {
+
+    switch (action.type) {
+      case 'add': {
+        const nodes = upsert(state.nodes, action.article)
+        return {
+          nodes,
+          edges: computeEdges(nodes),
+          selectedId: action.select ? action.article.title : state.selectedId,
+        }
       }
-    }
-    case 'setLinks': {
-      if (!state.nodes.some((n) => n.id === action.article.title)) return state
-      const nodes = upsert(state.nodes, action.article)
-      return { ...state, nodes, edges: computeEdges(nodes) }
-    }
-    case 'select':
-      return { ...state, selectedId: action.id }
-    case 'closePanel':
-      return { ...state, selectedId: null }
-    case 'clear':
-      return { nodes: [], edges: [], selectedId: null }
-    case 'delete':
-      if (action.id === null) {
+      case 'setLinks': {
+        if (!state.nodes.some((n) => n.id === action.article.title)) return state
+        const nodes = upsert(state.nodes, action.article)
+        return { ...state, nodes, edges: computeEdges(nodes) }
+      }
+      case 'select':
+        return { ...state, selectedId: action.id }
+      case 'closePanel':
+        return { ...state, selectedId: null }
+      case 'clear':
+        return { nodes: [], edges: [], selectedId: null }
+      case 'delete':
+        if (action.id === null) {
+          return state
+        }
+        return { ...removeNode(state, action.id), selectedId: null }
+      default:
         return state
-      }
-      return { ...removeNode(state, action.id), selectedId: null }
-    default:
-      return state
+    }
   }
+
+  const s = reducer_wrap()
+  setLocalStorage(s)
+  return s
 }
 
 function removeNode(state: GraphState, nodeId: string): GraphState {
@@ -102,10 +109,21 @@ function removeNode(state: GraphState, nodeId: string): GraphState {
   }
 }
 
+function getLocalStorage() {
+  return JSON.parse(localStorage['wg_state'])
+}
+
+function setLocalStorage(state: GraphState) {
+  localStorage['wg_state'] = JSON.stringify({
+    ...state,
+    selectedId: null
+  })
+}
+
 const EMPTY: GraphState = { nodes: [], edges: [], selectedId: null }
 
 export function useGraphStore() {
-  const [state, dispatch] = useReducer(reducer, EMPTY)
+  const [state, dispatch] = useReducer(reducer, undefined, () => getLocalStorage() ?? EMPTY)
 
   const addArticle = useCallback(
     (article: ArticlePayload, select = true) =>

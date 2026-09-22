@@ -28,9 +28,14 @@ export function GraphCanvas({
   onBackgroundClick,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const [size, setSize] = useState({ width: 20000, height: 900 })
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null)
   const [grabbing, setGrabbing] = useState(false)
-  const { positions, drag } = useForceLayout(nodes, edges, size.width, size.height)
+  const { positions, drag } = useForceLayout(
+    size ? nodes : [],
+    size ? edges : [],
+    size?.width ?? 0,
+    size?.height ?? 0,
+  )
 
   useEffect(() => {
     const el = svgRef.current
