@@ -152,7 +152,7 @@ export function DetailPanel({
 
         <div className="wg-dp-actions">
           <a
-            className="wg-btn-primary"
+            className="wg-btn-navigate"
             href={wikiUrl(node.title)}
             target="_blank"
             rel="noreferrer"

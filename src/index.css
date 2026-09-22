@@ -58,14 +58,6 @@ button {
   cursor: pointer;
 }
 
-a {
-  color: var(--wg-accent);
-}
-
-a:hover {
-  color: var(--wg-accent-dark);
-}
-
 /* ---------- shell ---------- */
 .wg-root {
   position: fixed;
@@ -554,9 +546,10 @@ a:hover {
   margin-top: 16px;
   display: flex;
   gap: 9px;
+  align-items: center;
 }
 
-.wg-btn-primary {
+.wg-btn-navigate {
   flex: 1;
   height: 40px;
   border: 0;
@@ -569,6 +562,10 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 7px;
+}
+
+.wg-btn-navigate:hover {
+  background: var(--wg-accent-dark);
 }
 
 /* ---------- view controls ---------- */
