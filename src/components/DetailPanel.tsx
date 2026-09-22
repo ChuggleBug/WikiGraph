@@ -18,6 +18,7 @@ interface Props {
   pendingTitles: Set<string>
   loadingAll: boolean
   onAdd: (title: string) => void
+  onDelete: (title: string) => void
   onSelectExisting: (title: string) => void
   onLoadAll: () => void
   onClose: () => void
@@ -69,6 +70,7 @@ export function DetailPanel({
   pendingTitles,
   loadingAll,
   onAdd,
+  onDelete,
   onSelectExisting,
   onLoadAll,
   onClose,

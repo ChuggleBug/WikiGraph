@@ -115,6 +115,7 @@ export default function App() {
         pendingTitles={pending}
         loadingAll={loadingAll}
         onAdd={(t) => addTitle(t, false)}
+        onDelete={store.delete}
         onSelectExisting={store.select}
         onLoadAll={loadAllLinks}
         onClose={store.closePanel}
