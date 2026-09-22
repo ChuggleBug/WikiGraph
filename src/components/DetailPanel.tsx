@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GraphNode } from '../types'
 import {
   CheckIcon,
@@ -8,6 +8,7 @@ import {
   PlusIcon,
   SpinnerIcon,
   ArrowRightIcon,
+  TrashIcon,
 } from './icons'
 import titleTransform from '../titleTransform';
 
@@ -80,11 +81,24 @@ export function DetailPanel({
   const onCanvas = node.links.filter((l) => nodeIds.has(l)).length
   const hiddenCount = node.outboundCount - node.links.length
 
+  const deleteHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      onDelete(node.id)
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', deleteHandler)
+    return () => {
+      window.removeEventListener('keydown', deleteHandler)
+    }
+  })
+
   return (
     <>
       {/* Debug status */}
       {/* <div style={{ position: 'fixed' }}>Detail Panel Open: {`${open}`}</div> */}
-      <div className={`wg-panel wg-dp ${open ?  'wg-dp--open' : ''}`}>
+      <div className={`wg-panel wg-dp ${open ? 'wg-dp--open' : ''}`}>
         <button className="wg-dp-close-btn" onClick={onClose} aria-label="Close panel">
           <CloseIcon size={15} />
         </button>
@@ -146,6 +160,13 @@ export function DetailPanel({
             Open on Wikipedia
             <ExternalIcon size={13} />
           </a>
+          <button
+            className="wg-icbtn wg-icbtn--danger"
+            onClick={() => onDelete(node.id)}
+            aria-label="Delete selected node"
+          >
+            <TrashIcon size={24}/>
+          </button>
         </div>
       </div>
     </>
