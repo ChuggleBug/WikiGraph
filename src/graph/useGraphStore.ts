@@ -110,7 +110,8 @@ function removeNode(state: GraphState, nodeId: string): GraphState {
 }
 
 function getLocalStorage() {
-  return JSON.parse(localStorage['wg_state'])
+  const local = localStorage['wg_state']
+  return local ? JSON.parse(local) : EMPTY
 }
 
 function setLocalStorage(state: GraphState) {
@@ -123,7 +124,7 @@ function setLocalStorage(state: GraphState) {
 const EMPTY: GraphState = { nodes: [], edges: [], selectedId: null }
 
 export function useGraphStore() {
-  const [state, dispatch] = useReducer(reducer, undefined, () => getLocalStorage() ?? EMPTY)
+  const [state, dispatch] = useReducer(reducer, undefined, () => getLocalStorage())
 
   const addArticle = useCallback(
     (article: ArticlePayload, select = true) =>
