@@ -2,7 +2,7 @@
  * Client for the WikiGraph backend (see API.md). Same-origin under `/api/wikigraph`;
  * override with VITE_API_BASE for a split deployment.
  */
-const BASE = import.meta.env.VITE_API_BASE ?? '/api/wikigraph'
+const BASE = import.meta.env.VITE_API_BASE || '/api/wikigraph'
 
 export class ApiError extends Error {}
 
