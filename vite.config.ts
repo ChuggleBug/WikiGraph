@@ -16,6 +16,14 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
+  },
+  preview: {
+    proxy: {
+      '/api': {
+        target: 'https://chugglebug.onthewifi.com',
+        changeOrigin: true,
+      }
+    }
   }
 
 })
