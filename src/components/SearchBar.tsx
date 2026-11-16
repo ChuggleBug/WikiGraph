@@ -212,6 +212,7 @@ export function SearchBar({ onPick, placeholder }: Props) {
                                 </div>
                             )}
                         {!stale &&
+                            status !== "error" &&
                             searchResults.map((e, i) => {
                                 const isRedirect = e.type == "redirect";
 
