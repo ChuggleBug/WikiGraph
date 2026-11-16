@@ -244,6 +244,7 @@ button {
     width: 100%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     padding: 9px 15px;
     border: 0;
@@ -276,6 +277,25 @@ button {
 .wg-result--empty:hover {
     border-left-color: transparent;
     background: transparent;
+}
+
+.wg-result-title,
+.wg-result-title-redirect {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wg-result-title-redirect {
+    color: var(--wg-faint);
+}
+
+.wg-result-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .wg-search-foot {
@@ -366,6 +386,7 @@ button {
 /* ---------- detail panel ---------- */
 .wg-dp {
     position: absolute;
+    pointer-events: none;
     right: 36px;
     top: 30px;
     width: 384px;
@@ -379,6 +400,7 @@ button {
     animation: wg-dp-fade-out 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .wg-dp--open {
+    pointer-events: all;
     animation: wg-dp-fade-in 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 /* Derived from https://prismic.io/blog/css-animation-examples#1-fadein-and-slideup-on-page-load */
