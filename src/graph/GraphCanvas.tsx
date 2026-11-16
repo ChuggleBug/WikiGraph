@@ -240,7 +240,10 @@ export function GraphCanvas({
                                     y={p.r + 15}
                                     fill={selected ? "#a23b2e" : undefined}
                                 >
-                                    {titleTransform(node.title)}
+                                    {titleTransform(node.title, {
+                                        trim: true,
+                                        count: 20,
+                                    })}
                                 </text>
                             </g>
                         );
