@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { ApiError, searchTitles, type SearchElement } from "../api";
 import { SpinnerIcon } from "./icons";
 import titleTransform, { textTrim } from "../titleTransform";
@@ -7,6 +7,7 @@ import { FaLongArrowAltLeft, FaSearch } from "react-icons/fa";
 interface Props {
     /** Resolves to whether the title was actually added (false if the API doesn't track it). */
     onPick: (title: string) => Promise<boolean>;
+    placeholder: string;
 }
 
 type Status = "idle" | "loading" | "done" | "error";
@@ -24,7 +25,7 @@ function parseWikipediaUrl(value: string): string | null {
     }
 }
 
-export function SearchBar({ onPick }: Props) {
+export function SearchBar({ onPick, placeholder }: Props) {
     // State of the search bar itself
     const [focused, setFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +35,6 @@ export function SearchBar({ onPick }: Props) {
     // Current value inside of text input
     const [query, setQuery] = useState("");
     const trimmed = query.trim();
-    //
     const [searchedQuery, setSearchedQuery] = useState<string | null>(null);
 
     const [searchResults, setSearchResults] = useState<SearchElement[]>([]);
@@ -125,6 +125,12 @@ export function SearchBar({ onPick }: Props) {
         }
     };
 
+    // If the placeholder text changed, then the mode, changed
+    // Revert to default state
+    useLayoutEffect(() => {
+        setQuery("");
+    }, [placeholder]);
+
     return (
         <div className={`wg-panel wg-search${open ? " wg-search--open" : ""}`}>
             {/* Debug block showing internal state */}
@@ -183,7 +189,7 @@ export function SearchBar({ onPick }: Props) {
                         }, 10);
                     }}
                     onKeyDown={onKeyDown}
-                    placeholder="Search Wikipedia articles..."
+                    placeholder={placeholder}
                     aria-expanded={open}
                     aria-controls={listId}
                     aria-autocomplete="list"

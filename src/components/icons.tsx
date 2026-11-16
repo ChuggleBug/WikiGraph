@@ -1,3 +1,5 @@
+import { IconBase, type IconBaseProps } from "react-icons";
+
 /** Small stroke-based icon set, sized via the `size` prop. */
 interface IconProps {
     size?: number;
@@ -90,4 +92,24 @@ export const SpinnerIcon = ({ size = 13 }: IconProps) => (
         <path d="M12 3 a9 9 0 0 1 9 9" />
         <style>{`@keyframes wg-spin{to{transform:rotate(360deg)}}`}</style>
     </svg>
+);
+
+/**
+ * Path icon: a route through a graph. Drawn in Font Awesome's solid style
+ * (512 viewBox, filled shapes, currentColor) on react-icons' IconBase, so it
+ * takes the same props as Fa* icons (size, color, title, IconContext).
+ * Start and waypoint nodes are solid; the destination is a ring.
+ */
+export const PathIcon = (props: IconBaseProps) => (
+    <IconBase attr={{ viewBox: "0 0 512 512" }} {...props}>
+        <path
+            d="M96 416 L224 96 L370 267"
+            fill="none"
+            strokeWidth="48"
+            strokeLinejoin="round"
+        />
+        <circle cx="96" cy="416" r="72" />
+        <circle cx="224" cy="96" r="72" />
+        <circle cx="416" cy="320" r="60" fill="none" strokeWidth="48" />
+    </IconBase>
 );

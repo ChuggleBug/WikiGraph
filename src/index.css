@@ -510,6 +510,19 @@ button {
     color: var(--wg-ink-secondary);
 }
 
+.wg-dp-path {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--wg-border-strong);
+    border-radius: 8px;
+    background: var(--wg-chip-bg);
+    color: var(--wg-ink-secondary);
+}
+
 .wg-dp-toggle svg {
     transition: transform 0.15s;
 }

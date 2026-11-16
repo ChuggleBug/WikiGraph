@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, checkStatus, fetchLinks } from "./api";
+import { StrictMode, useCallback, useEffect, useRef, useState } from "react";
+import { ApiError, checkStatus, fetchLinks, getShortestPath } from "./api";
 import { DetailPanel } from "./components/DetailPanel";
 import { Legend } from "./components/Legend";
 import { SearchBar } from "./components/SearchBar";
@@ -8,7 +8,8 @@ import { Wordmark } from "./components/Wordmark";
 import { GraphCanvas } from "./graph/GraphCanvas";
 import { useGraphStore } from "./graph/useGraphStore";
 import { useView } from "./graph/useView";
-import type { GraphNode } from "./types";
+import titleTransform from "./titleTransform";
+import { nodeRadius } from "./types";
 
 export default function App() {
     const store = useGraphStore();
@@ -18,15 +19,7 @@ export default function App() {
     const [loadingAll, setLoadingAll] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
     const toastTimer = useRef<number | undefined>(undefined);
-    const [lastNode, setLastNode] = useState<GraphNode | null>(
-        store.selectedNode,
-    );
-
-    useEffect(() => {
-        if (store.selectedNode) {
-            setLastNode(store.selectedNode);
-        }
-    }, [store.selectedNode]);
+    const [pathMode, setPathMode] = useState(false);
 
     const showToast = useCallback((message: string) => {
         setToast(message);
@@ -49,6 +42,7 @@ export default function App() {
                 store.select(title);
                 return true;
             }
+            // Some thing else if being queried
             if (pending.has(title)) {
                 return false;
             }
@@ -74,6 +68,62 @@ export default function App() {
         },
         [pending, store, showToast],
     );
+
+    const findPath = async (title: string) => {
+        if (!store.selectedNode?.title) {
+            return false;
+        }
+        // Some thing else if being queried
+        if (pending.has(title)) {
+            return false;
+        }
+        setPending((prev) => new Set(prev).add(title));
+        try {
+            const { path } = await getShortestPath(
+                store.selectedNode.title,
+                title,
+            );
+
+            // Need to add data for all paths
+            // First element is always store.selectedNode.title
+            // Only select on the last node
+            const titleSet = new Set(store.nodes.map((n) => n.title));
+            for (const t of path.slice(1, -1)) {
+                if (!titleSet.has(t)) {
+                    const { count, links } = await fetchLinks(t);
+                    store.addArticle({ title: t, count, links }, false);
+                }
+            }
+            // Manual check on the last node
+            // Since it needs to be selected
+            const lastTitle = path.at(-1);
+            if (lastTitle) {
+                // Dont make the API call if the node is already added
+                if (!titleSet.has(lastTitle)) {
+                    const { count, links } = await fetchLinks(lastTitle);
+                    store.addArticle({ title: lastTitle, count, links }, true);
+                } else {
+                    store.select(lastTitle);
+                }
+            }
+            return true;
+
+            // Need to make a call for all paths
+        } catch (err) {
+            showToast(
+                err instanceof ApiError
+                    ? err.message
+                    : `Failed to perform path search`,
+            );
+            return false;
+        } finally {
+            setPending((prev) => {
+                const next = new Set(prev);
+                next.delete(title);
+                return next;
+            });
+        }
+    };
 
     const loadAllLinks = useCallback(async () => {
         const node = store.selectedNode;
@@ -103,6 +153,31 @@ export default function App() {
     const zoomCenter = (factor: number) =>
         zoomAt(factor, window.innerWidth / 2, window.innerHeight / 2);
 
+    const panelOpen = !!store.selectedNode;
+
+    const onPick = async (title: string) => {
+        // When the panel is open, then "shortest path lookup is requested"
+        if (panelOpen) {
+            return findPath(title);
+        }
+        return addTitle(title, true);
+    };
+
+    let pathTruncatedTitle = titleTransform(store.selectedNode?.title ?? "", {
+        trim: true,
+        count: 20,
+    });
+    if (!pathTruncatedTitle.endsWith("...")) {
+        pathTruncatedTitle += "...";
+    }
+
+    // Make sure path mode is off when panel is close
+    useEffect(() => {
+        if (!panelOpen) {
+            setPathMode(false);
+        }
+    }, [panelOpen]);
+
     return (
         <div className="wg-root">
             {/* Fixed to top left */}
@@ -120,12 +195,22 @@ export default function App() {
             />
 
             {/* Search bars make the new node selected */}
-            <SearchBar onPick={(t) => addTitle(t, true)} />
+            <SearchBar
+                onPick={onPick}
+                placeholder={
+                    pathMode
+                        ? `Find a Path from ${pathTruncatedTitle}`
+                        : "Search Wikipedia articles..."
+                }
+            />
 
-            {lastNode && (
+            <div>{JSON.stringify(store.selectedNode?.title ?? "none")}</div>
+            <div>{JSON.stringify({ pathMode })}</div>
+
+            {store.selectedNode && (
                 <DetailPanel
-                    open={!!store.selectedNode}
-                    node={lastNode}
+                    open={panelOpen}
+                    node={store.selectedNode}
                     nodeIds={store.nodeIds}
                     pendingTitles={pending}
                     loadingAll={loadingAll}
@@ -133,6 +218,7 @@ export default function App() {
                     onDelete={store.delete}
                     onSelectExisting={store.select}
                     onLoadAll={loadAllLinks}
+                    onPathModeToggle={() => setPathMode((v) => !v)}
                     onClose={store.closePanel}
                 />
             )}

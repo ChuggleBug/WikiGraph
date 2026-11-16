@@ -131,3 +131,18 @@ export async function checkStatus(signal?: AbortSignal): Promise<boolean> {
         return false;
     }
 }
+
+export function getShortestPath(
+    from: string,
+    to: string,
+    signal?: AbortSignal,
+): Promise<ShortestPathResponse> {
+    return getJson<ShortestPathResponse>(
+        "/path",
+        {
+            fromTitle: from,
+            toTitle: to,
+        },
+        signal,
+    );
+}

@@ -9,6 +9,7 @@ import {
     SpinnerIcon,
     ArrowRightIcon,
     TrashIcon,
+    PathIcon,
 } from "./icons";
 import titleTransform from "../titleTransform";
 
@@ -21,6 +22,7 @@ interface Props {
     onAdd: (title: string) => void;
     onDelete: (title: string) => void;
     onSelectExisting: (title: string) => void;
+    onPathModeToggle: () => void;
     onLoadAll: () => void;
     onClose: () => void;
 }
@@ -83,6 +85,7 @@ export function DetailPanel({
     onAdd,
     onDelete,
     onSelectExisting,
+    onPathModeToggle,
     onLoadAll,
     onClose,
 }: Props) {
@@ -131,6 +134,14 @@ export function DetailPanel({
                     >
                         {expanded ? "Hide list" : "Show list"}
                         <ChevronDownIcon size={12} />
+                    </button>
+                    <button
+                        className="wg-dp-path"
+                        aria-label="Find path"
+                        title="Find path"
+                        onClick={onPathModeToggle}
+                    >
+                        <PathIcon size={14} />
                     </button>
                 </div>
 
