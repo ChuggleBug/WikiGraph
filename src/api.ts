@@ -124,7 +124,6 @@ export function fetchLinks(
 export async function checkStatus(signal?: AbortSignal): Promise<boolean> {
     try {
         const res = await getJson<HealthResponse>(`/health`, {}, signal);
-        console.log(res);
         return res.status === "ok";
     } catch {
         return false;
