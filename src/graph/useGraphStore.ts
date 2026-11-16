@@ -58,8 +58,8 @@ interface ArticlePayload {
 type Action =
     | { type: "add"; article: ArticlePayload; select?: boolean }
     | { type: "setLinks"; article: ArticlePayload }
-    | { type: "select"; id: string | null }
-    | { type: "delete"; id: string | null }
+    | { type: "select"; title: string | null }
+    | { type: "delete"; title: string | null }
     | { type: "closePanel" }
     | { type: "clear" };
 
@@ -101,16 +101,16 @@ function reducer(state: GraphState, action: Action): GraphState {
                 return { ...state, nodes, edges: computeEdges(nodes) };
             }
             case "select":
-                return { ...state, selectedId: action.id };
+                return { ...state, selectedId: action.title };
             case "closePanel":
                 return { ...state, selectedId: null };
             case "clear":
                 return { nodes: [], edges: [], selectedId: null };
             case "delete":
-                if (action.id === null) {
+                if (action.title === null) {
                     return state;
                 }
-                return { ...removeNode(state, action.id), selectedId: null };
+                return { ...removeNode(state, action.title), selectedId: null };
             default:
                 return state;
         }
@@ -160,11 +160,11 @@ export function useGraphStore() {
         [],
     );
     const selectNode = useCallback(
-        (id: string | null) => dispatch({ type: "select", id }),
+        (title: string | null) => dispatch({ type: "select", title }),
         [],
     );
     const deleteNode = useCallback(
-        (id: string | null) => dispatch({ type: "delete", id }),
+        (title: string | null) => dispatch({ type: "delete", title }),
         [],
     );
     const closePanel = useCallback(() => dispatch({ type: "closePanel" }), []);
