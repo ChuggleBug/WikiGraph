@@ -4,7 +4,7 @@ export class ApiError extends Error {}
 
 async function getJson<T>(
     path: string,
-    params: Record<string, any>,
+    params: Record<string, string>,
     signal?: AbortSignal,
 ): Promise<T> {
     const qs = new URLSearchParams(params).toString();
@@ -28,8 +28,7 @@ async function getJson<T>(
     return data;
 }
 
-const HEALTH_STATUS = ["ok", "down", "unknown"] as const;
-type HealthStatus = (typeof HEALTH_STATUS)[number];
+type HealthStatus = "ok" | "down" | "unknown";
 
 export interface HealthResponse {
     status: HealthStatus;
@@ -100,7 +99,7 @@ export function searchTitles(
 ): Promise<SearchTitlesResponse> {
     return getJson<SearchTitlesResponse>(
         "/search",
-        { name, redirects: true },
+        { name, redirects: JSON.stringify(true) },
         signal,
     );
 }

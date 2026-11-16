@@ -1,4 +1,4 @@
-import { StrictMode, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, checkStatus, fetchLinks, getShortestPath } from "./api";
 import { DetailPanel } from "./components/DetailPanel";
 import { Legend } from "./components/Legend";
@@ -9,7 +9,6 @@ import { GraphCanvas } from "./graph/GraphCanvas";
 import { useGraphStore } from "./graph/useGraphStore";
 import { useView } from "./graph/useView";
 import titleTransform from "./titleTransform";
-import { nodeRadius } from "./types";
 
 export default function App() {
     const store = useGraphStore();
@@ -171,13 +170,6 @@ export default function App() {
         pathTruncatedTitle += "...";
     }
 
-    // Make sure path mode is off when panel is close
-    useEffect(() => {
-        if (!panelOpen) {
-            setPathMode(false);
-        }
-    }, [panelOpen]);
-
     return (
         <div className="wg-root">
             {/* Fixed to top left */}
@@ -191,7 +183,10 @@ export default function App() {
                 onPanBy={panBy}
                 onZoomAt={zoomAt}
                 onSelectNode={store.select}
-                onBackgroundClick={store.closePanel}
+                onBackgroundClick={() => {
+                    store.closePanel();
+                    setPathMode(false);
+                }}
             />
 
             {/* Search bars make the new node selected */}
@@ -203,9 +198,6 @@ export default function App() {
                         : "Search Wikipedia articles..."
                 }
             />
-
-            <div>{JSON.stringify(store.selectedNode?.title ?? "none")}</div>
-            <div>{JSON.stringify({ pathMode })}</div>
 
             {store.selectedNode && (
                 <DetailPanel
@@ -219,7 +211,10 @@ export default function App() {
                     onSelectExisting={store.select}
                     onLoadAll={loadAllLinks}
                     onPathModeToggle={() => setPathMode((v) => !v)}
-                    onClose={store.closePanel}
+                    onClose={() => {
+                        store.closePanel();
+                        setPathMode(false);
+                    }}
                 />
             )}
 

@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { ApiError, searchTitles, type SearchElement } from "../api";
 import { SpinnerIcon } from "./icons";
 import titleTransform, { textTrim } from "../titleTransform";
@@ -41,6 +41,14 @@ export function SearchBar({ onPick, placeholder }: Props) {
     const [error, setError] = useState("");
     const [active, setActive] = useState(0);
     const listId = useId();
+
+    const [prevPlaceholder, setPrevPlaceholder] = useState(placeholder);
+
+    // Clear query on new placeholder
+    if (placeholder !== prevPlaceholder) {
+        setPrevPlaceholder(placeholder);
+        setQuery("");
+    }
 
     const changeQuery = (value: string) => {
         setQuery(value);
@@ -101,7 +109,7 @@ export function SearchBar({ onPick, placeholder }: Props) {
         } else if (e.key === "Enter") {
             e.preventDefault();
             const urlParsed = parseWikipediaUrl(trimmed);
-            if (!!urlParsed) {
+            if (urlParsed) {
                 // Try to add immediately
                 void pickTitle(urlParsed);
                 return;
@@ -124,12 +132,6 @@ export function SearchBar({ onPick, placeholder }: Props) {
             setActive((i) => Math.max(i - 1, 0));
         }
     };
-
-    // If the placeholder text changed, then the mode, changed
-    // Revert to default state
-    useLayoutEffect(() => {
-        setQuery("");
-    }, [placeholder]);
 
     return (
         <div className={`wg-panel wg-search${open ? " wg-search--open" : ""}`}>

@@ -22,7 +22,7 @@ export default function titleTransform(
     },
 ): string {
     // Remove underscore from text
-    let transformedTitle = title.replace(/_/g, " ");
+    const transformedTitle = title.replace(/_/g, " ");
     if (!opt.trim) {
         return transformedTitle;
     }
