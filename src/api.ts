@@ -4,7 +4,7 @@ export class ApiError extends Error {}
 
 async function getJson<T>(
     path: string,
-    params: Record<string, string>,
+    params: Record<string, any>,
     signal?: AbortSignal,
 ): Promise<T> {
     const qs = new URLSearchParams(params).toString();
@@ -44,8 +44,8 @@ export interface ShortestPathResponse {
 
 export interface OutboundLinksResponse {
     title: string;
-    count: string;
-    links: ReadonlyArray<string>;
+    count: number;
+    links: string[];
 }
 
 export const PAGE_TYPES = ["page", "redirect"] as const;
@@ -57,11 +57,11 @@ interface SearchElementBase<T extends PageType> {
 }
 
 export interface PageSearchElement extends SearchElementBase<"page"> {
-    redirects: ReadonlyArray<string>;
+    redirects?: ReadonlyArray<string> | null;
 }
 
 export interface RedirectSearchElement extends SearchElementBase<"redirect"> {
-    redirects?: ReadonlyArray<string> | null;
+    redirects: ReadonlyArray<string>;
 }
 
 export type SearchElement = PageSearchElement | RedirectSearchElement;
@@ -90,7 +90,7 @@ export function redirectsOf(el: SearchElement): ReadonlyArray<string> {
 export interface SearchTitlesResponse {
     name: string;
     count: number;
-    titles: ReadonlyArray<SearchElement>;
+    titles: SearchElement[];
 }
 
 /** "Did you mean" title lookup for a free-form user query. */
@@ -98,7 +98,11 @@ export function searchTitles(
     name: string,
     signal?: AbortSignal,
 ): Promise<SearchTitlesResponse> {
-    return getJson<SearchTitlesResponse>("/search", { name }, signal);
+    return getJson<SearchTitlesResponse>(
+        "/search",
+        { name, redirects: true },
+        signal,
+    );
 }
 
 /**
