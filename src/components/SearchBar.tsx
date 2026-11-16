@@ -1,7 +1,8 @@
 import { useId, useRef, useState } from "react";
-import { ApiError, searchTitles } from "../api";
-import { SearchIcon, SpinnerIcon } from "./icons";
-import titleTransform from "../titleTransform";
+import { ApiError, searchTitles, type SearchElement } from "../api";
+import { SpinnerIcon } from "./icons";
+import titleTransform, { textTrim } from "../titleTransform";
+import { FaLongArrowAltLeft, FaSearch } from "react-icons/fa";
 
 interface Props {
     /** Resolves to whether the title was actually added (false if the API doesn't track it). */
@@ -9,7 +10,6 @@ interface Props {
 }
 
 type Status = "idle" | "loading" | "done" | "error";
-type Mode = "search" | "link";
 
 /** Parses a Wikipedia article URL's `/wiki/<title>` segment, dropping any `#fragment`. */
 function parseWikipediaUrl(value: string): string | null {
@@ -25,54 +25,43 @@ function parseWikipediaUrl(value: string): string | null {
 }
 
 export function SearchBar({ onPick }: Props) {
-    const [mode, setMode] = useState<Mode>("search");
-    const [query, setQuery] = useState("");
+    // State of the search bar itself
     const [focused, setFocused] = useState(false);
-    const [titles, setTitles] = useState<string[]>([]);
-    const [status, setStatus] = useState<Status>("idle");
-    const [error, setError] = useState("");
-    const [active, setActive] = useState(0);
-    const [searchedQuery, setSearchedQuery] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const listId = useId();
+    const [status, setStatus] = useState<Status>("idle");
 
+    // Current value inside of text input
+    const [query, setQuery] = useState("");
     const trimmed = query.trim();
+    //
+    const [searchedQuery, setSearchedQuery] = useState<string | null>(null);
+
+    const [searchResults, setSearchResults] = useState<SearchElement[]>([]);
+    const [error, setError] = useState("");
+    const [active, setActive] = useState(0);
+    const listId = useId();
 
     const changeQuery = (value: string) => {
         setQuery(value);
-        if (mode === "link") {
-            setStatus("idle");
-        } else if (!value.trim()) {
-            setTitles([]);
-            setStatus("idle");
-            setSearchedQuery(null);
-        }
-    };
-
-    const toggleMode = () => {
-        setMode((m) => (m === "search" ? "link" : "search"));
-        setQuery("");
-        setTitles([]);
+        setSearchResults([]);
         setStatus("idle");
-        setError("");
         setSearchedQuery(null);
-        inputRef.current?.focus();
     };
 
-    const runSearch = async () => {
-        if (!trimmed) {
+    const runSearch = async (title: string) => {
+        if (!title) {
             return;
         }
         setStatus("loading");
-        setSearchedQuery(trimmed);
+        setSearchedQuery(title);
         try {
-            const res = await searchTitles(trimmed);
+            const res = await searchTitles(title);
             if (res.titles.length === 0) {
                 setError("No results");
                 setStatus("error");
             } else {
-                setTitles(res.titles);
+                setSearchResults(res.titles);
                 setActive(0);
                 setStatus("done");
             }
@@ -91,61 +80,45 @@ export function SearchBar({ onPick }: Props) {
     // Any changes made to search bar after submission
     const submissionChanged = open && !stale && status !== "idle";
 
-    const pick = async (title: string) => {
+    const pickTitle = async (title: string) => {
         setStatus("loading");
         const added = await onPick(title);
         if (added) {
             setQuery("");
-            setTitles([]);
+            setSearchResults([]);
             setStatus("idle");
             setSearchedQuery(null);
             inputRef.current?.blur();
         } else {
-            setError("This article isn't tracked by this site");
-            setStatus("error");
-        }
-    };
-
-    // Just a small wrapper for pick
-    const submitLink = (trimmed: string) => {
-        setSearchedQuery(trimmed);
-        const title = parseWikipediaUrl(trimmed);
-        if (title) {
-            void pick(title);
-        } else {
-            setError("Not a valid Wikipedia article link.");
+            setError("Failed to add article");
             setStatus("error");
         }
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        // Leave
         if (e.key === "Escape") {
-            setQuery("");
             inputRef.current?.blur();
         } else if (e.key === "Enter") {
             e.preventDefault();
-            if (mode === "search") {
-                if (searchedQuery === trimmed && status !== "loading") {
-                    if (titles[active]) {
-                        void pick(titles[active]);
-                    }
-                } else {
-                    // Need to get a selection of titles
-                    void runSearch();
-                }
-            } else if (mode === "link") {
-                if (e.key === "Enter") {
-                    if (trimmed) {
-                        submitLink(trimmed);
-                    }
+            const urlParsed = parseWikipediaUrl(trimmed);
+            if (!!urlParsed) {
+                // Try to add immediately
+                void pickTitle(urlParsed);
+                return;
+            }
+
+            // Treat input as a regular search query
+            if (searchedQuery === trimmed && status !== "loading") {
+                if (searchResults[active]) {
+                    void pickTitle(searchResults.map((e) => e.title)[active]);
                 }
             } else {
-                console.log("Unknown Search mode:", mode);
+                // Need to get a selection of titles
+                void runSearch(trimmed);
             }
         } else if (e.key === "ArrowDown") {
             e.preventDefault();
-            setActive((i) => Math.min(i + 1, titles.length - 1));
+            setActive((i) => Math.min(i + 1, searchResults.length - 1));
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
             setActive((i) => Math.max(i - 1, 0));
@@ -155,20 +128,29 @@ export function SearchBar({ onPick }: Props) {
     return (
         <div className={`wg-panel wg-search${open ? " wg-search--open" : ""}`}>
             {/* Debug block showing internal state */}
-            {/* <div style={{ position: 'fixed', zIndex: '50', display: 'flex', gap: '5', flexDirection: 'column', right: '50px' }}>
-        <span>mode: {mode}</span>
-        <span>query: {query}</span>
-        <span>focused: {focused ? "true" : 'false'}</span>
-        <span>titles: {titles}</span>
-        <span>status: {status}</span>
-        <span>error: {error}</span>
-        <span>active: {active}</span>
-        <span>searchedQuery: {searchedQuery}</span>
-        <span>trimmed: {trimmed}</span>
-        <span>open: {open ? "true" : 'false'}</span>
-        <span>stale: {stale ? "true" : 'false'}</span>
-        <span>submissionChanged: {submissionChanged ? "true" : 'false'}</span>
-      </div> */}
+            {/* <div
+                style={{
+                    position: "fixed",
+                    zIndex: "50",
+                    display: "flex",
+                    gap: "5",
+                    flexDirection: "column",
+                    right: "50px",
+                }}
+            >
+                <span>query: {query}</span>
+                <span>focused: {focused ? "true" : "false"}</span>
+                <span>status: {status}</span>
+                <span>error: {error}</span>
+                <span>active: {active}</span>
+                <span>searchedQuery: {searchedQuery}</span>
+                <span>trimmed: {trimmed}</span>
+                <span>open: {open ? "true" : "false"}</span>
+                <span>stale: {stale ? "true" : "false"}</span>
+                <span>
+                    submissionChanged: {submissionChanged ? "true" : "false"}
+                </span>
+            </div> */}
 
             {/* Top Search Bar segment */}
             <div
@@ -181,7 +163,7 @@ export function SearchBar({ onPick }: Props) {
                 }}
             >
                 {/* Input text box */}
-                <SearchIcon size={17} />
+                <FaSearch size={16} />
                 <input
                     name="search bar"
                     ref={inputRef}
@@ -201,50 +183,14 @@ export function SearchBar({ onPick }: Props) {
                         }, 10);
                     }}
                     onKeyDown={onKeyDown}
-                    placeholder={
-                        mode === "link"
-                            ? "Paste a Wikipedia article link..."
-                            : "Search Wikipedia articles..."
-                    }
+                    placeholder="Search Wikipedia articles..."
                     aria-expanded={open}
                     aria-controls={listId}
                     aria-autocomplete="list"
                 />
-
-                {/* Which mode button */}
-                <button type="button" onClick={toggleMode}>
-                    <span data-hidden={mode !== "search"}>Search Mode</span>
-                    <span data-hidden={mode !== "link"}>URL Mode</span>
-                </button>
             </div>
 
-            {focused && mode === "link" && (
-                <>
-                    {status === "error" && (
-                        <div className="wg-results">
-                            <div className="wg-result wg-result--empty">
-                                {error}
-                            </div>
-                        </div>
-                    )}
-
-                    <div
-                        className="wg-search-foot"
-                        results-shown={`${submissionChanged}`}
-                    >
-                        <div className="wg-search-foot-help">
-                            <span>
-                                <b>↵ (enter)</b> add to graph
-                            </span>
-                            <span>
-                                <b>esc</b> dismiss
-                            </span>
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {focused && mode === "search" && (
+            {focused && (
                 <>
                     <div className="wg-results" id={listId} role="listbox">
                         {!stale && status === "error" && (
@@ -252,32 +198,78 @@ export function SearchBar({ onPick }: Props) {
                                 {error}
                             </div>
                         )}
-                        {!stale && status === "done" && titles.length === 0 && (
-                            <div className="wg-result wg-result--empty">
-                                No matching articles.
-                            </div>
-                        )}
                         {!stale &&
-                            titles.map((title, i) => (
-                                <button
-                                    key={title}
-                                    type="button"
-                                    role="option"
-                                    aria-selected={i === active}
-                                    className="wg-result"
-                                    onMouseEnter={() => setActive(i)}
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    onClick={() => void pick(title)}
-                                >
-                                    <span style={{ flex: 1 }}>
-                                        {titleTransform(title)}
-                                    </span>
-                                    {i === active && (
-                                        <span className="ret">↵</span>
-                                    )}
-                                </button>
-                            ))}
+                            status === "done" &&
+                            searchResults.length === 0 && (
+                                <div className="wg-result wg-result--empty">
+                                    No matching articles.
+                                </div>
+                            )}
+                        {!stale &&
+                            searchResults.map((e, i) => {
+                                const isRedirect = e.type == "redirect";
+
+                                const redirectString = isRedirect
+                                    ? e.redirects
+                                          .map((e) => titleTransform(e))
+                                          .join(", ")
+                                    : "";
+
+                                // Heuristic value
+                                const TOTAL_LENGTH = 50;
+
+                                // Number of characters needed for the title
+                                // capped at 2/3 of the total length
+                                const titleMax = Math.min(
+                                    TOTAL_LENGTH * (isRedirect ? 0.66 : 1),
+                                    e.title.length,
+                                );
+
+                                // It can take up the rest of the space
+                                const redirectMax = TOTAL_LENGTH - titleMax;
+
+                                return (
+                                    <button
+                                        key={e.title}
+                                        className="wg-result"
+                                        type="button"
+                                        role="option"
+                                        aria-selected={i === active}
+                                        title={titleTransform(e.title)}
+                                        onMouseEnter={() => setActive(i)}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => void pickTitle(e.title)}
+                                    >
+                                        <div className="wg-result-body">
+                                            <div className="wg-result-title">
+                                                <span className="wg-result-name">
+                                                    {titleTransform(e.title, {
+                                                        trim: true,
+                                                        count: titleMax,
+                                                    })}
+                                                </span>
+                                                {e.type == "redirect" && (
+                                                    <div className="wg-result-title-redirect">
+                                                        <FaLongArrowAltLeft />
+                                                        {/* Sum  */}
+                                                        {textTrim(
+                                                            redirectString,
+                                                            {
+                                                                count: redirectMax,
+                                                            },
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {i === active && (
+                                            <span className="ret">↵</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
                     </div>
+
                     <div
                         className="wg-search-foot"
                         results-shown={`${submissionChanged}`}
@@ -303,8 +295,10 @@ export function SearchBar({ onPick }: Props) {
                             {status === "loading" && <SpinnerIcon size={14} />}
                             {!stale && status === "done" && (
                                 <span className="wg-search-count">
-                                    {titles.length}{" "}
-                                    {titles.length === 1 ? "result" : "results"}
+                                    {searchResults.length}{" "}
+                                    {searchResults.length === 1
+                                        ? "result"
+                                        : "results"}
                                 </span>
                             )}
                         </div>
