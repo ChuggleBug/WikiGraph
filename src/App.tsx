@@ -197,6 +197,7 @@ export default function App() {
                         ? `Find a Path from ${pathTruncatedTitle}`
                         : "Search Wikipedia articles..."
                 }
+                pathMode={pathMode}
             />
 
             {store.selectedNode && (

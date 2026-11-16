@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from "react";
 import { ApiError, searchTitles, type SearchElement } from "../api";
-import { SpinnerIcon } from "./icons";
+import { PathIcon, SpinnerIcon } from "./icons";
 import titleTransform, { textTrim } from "../titleTransform";
 import { FaLongArrowAltLeft, FaSearch } from "react-icons/fa";
 
@@ -8,6 +8,7 @@ interface Props {
     /** Resolves to whether the title was actually added (false if the API doesn't track it). */
     onPick: (title: string) => Promise<boolean>;
     placeholder: string;
+    pathMode: boolean;
 }
 
 type Status = "idle" | "loading" | "done" | "error";
@@ -25,7 +26,7 @@ function parseWikipediaUrl(value: string): string | null {
     }
 }
 
-export function SearchBar({ onPick, placeholder }: Props) {
+export function SearchBar({ onPick, placeholder, pathMode }: Props) {
     // State of the search bar itself
     const [focused, setFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -171,7 +172,7 @@ export function SearchBar({ onPick, placeholder }: Props) {
                 }}
             >
                 {/* Input text box */}
-                <FaSearch size={16} />
+                {pathMode ? <PathIcon size={16} /> : <FaSearch size={16} />}
                 <input
                     name="search bar"
                     ref={inputRef}
