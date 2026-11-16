@@ -4,23 +4,24 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/app/wikigraph/',
+  base: '/',
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      '/wikigraph/': {
+        target: 'http://localhost:8080/',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wikigraph/, '')
       }
     }
   },
   preview: {
     proxy: {
-      '/api': {
-        target: 'https://chugglebug.onthewifi.com',
+      '/wikigraph/': {
+        target: 'https://api.chugglebug.dev',
         changeOrigin: true,
       }
     }
