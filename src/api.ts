@@ -93,24 +93,12 @@ export interface SearchTitlesResponse {
     titles: ReadonlyArray<SearchElement>;
 }
 
-export interface SearchResult {
-    name: string;
-    count: number;
-    titles: string[];
-}
-
 /** "Did you mean" title lookup for a free-form user query. */
 export function searchTitles(
     name: string,
     signal?: AbortSignal,
-): Promise<SearchResult> {
-    return getJson<SearchResult>("/search", { name }, signal);
-}
-
-export interface LinksResult {
-    title: string;
-    count: number;
-    links: string[];
+): Promise<SearchTitlesResponse> {
+    return getJson<SearchTitlesResponse>("/search", { name }, signal);
 }
 
 /**
@@ -121,8 +109,12 @@ export function fetchLinks(
     title: string,
     all = true,
     signal?: AbortSignal,
-): Promise<LinksResult> {
-    return getJson<LinksResult>("/links", { title, all: String(all) }, signal);
+): Promise<OutboundLinksResponse> {
+    return getJson<OutboundLinksResponse>(
+        "/links",
+        { title, all: String(all) },
+        signal,
+    );
 }
 
 /** Server health check. */
