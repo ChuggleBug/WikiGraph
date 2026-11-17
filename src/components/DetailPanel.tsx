@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GraphNode } from "../types";
 import {
     CheckIcon,
@@ -94,11 +94,49 @@ export function DetailPanel({
     const onCanvas = node.links.filter((l) => nodeIds.has(l)).length;
     const hiddenCount = node.outboundCount - node.links.length;
 
+    useEffect(() => {
+        window.addEventListener("keydown", handleKeydown);
+        return () => {
+            window.removeEventListener("keydown", handleKeydown);
+        };
+    });
+
+    const handleKeydown = (e: KeyboardEvent) => {
+        if (!panelRef.current) {
+            return;
+        }
+
+        if (
+            (e.ctrlKey || e.metaKey) &&
+            (e.key === "Delete" || e.key === "Backspace")
+        ) {
+            onDelete(node.title);
+        }
+    };
+
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!panelRef.current) {
+            return;
+        }
+
+        window.addEventListener("keydown", handleKeydown);
+        return () => {
+            window.addEventListener("keydown", handleKeydown);
+        };
+    }, [panelRef.current]);
+
     return (
         <>
             {/* Debug status */}
-            {/* <div style={{ position: 'fixed' }}>Detail Panel Open: {`${open}`}</div> */}
-            <div className={`wg-panel wg-dp ${open ? "wg-dp--open" : ""}`}>
+            {/* <div style={{ position: "fixed" }}>
+                Detail Panel Open: {JSON.stringify({ open })}
+            </div> */}
+            <div
+                ref={panelRef}
+                className={`wg-panel wg-dp ${open ? "wg-dp--open" : ""}`}
+            >
                 <button
                     className="wg-dp-close-btn"
                     onClick={onClose}
