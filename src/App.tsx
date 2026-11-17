@@ -208,7 +208,10 @@ export default function App() {
                     pendingTitles={pending}
                     loadingAll={loadingAll}
                     onAdd={(t) => addTitle(t, false)}
-                    onDelete={store.delete}
+                    onDelete={(t) => {
+                        store.delete(t);
+                        setPathMode(false);
+                    }}
                     onSelectExisting={store.select}
                     onLoadAll={loadAllLinks}
                     onPathModeToggle={() => setPathMode((v) => !v)}
