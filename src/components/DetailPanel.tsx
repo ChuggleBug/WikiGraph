@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { GraphNode } from "../types";
 import {
     CheckIcon,
@@ -93,19 +93,6 @@ export function DetailPanel({
 
     const onCanvas = node.links.filter((l) => nodeIds.has(l)).length;
     const hiddenCount = node.outboundCount - node.links.length;
-
-    const deleteHandler = (e: KeyboardEvent) => {
-        if (e.key === "Delete" || e.key === "Backspace") {
-            onDelete(node.id);
-        }
-    };
-
-    useEffect(() => {
-        window.addEventListener("keydown", deleteHandler);
-        return () => {
-            window.removeEventListener("keydown", deleteHandler);
-        };
-    });
 
     return (
         <>
