@@ -1,4 +1,5 @@
-const BASE = "/wikigraph";
+// Allow override of root url
+const BASE = (import.meta.env.VITE_API_BASE ?? "") + "/wikigraph";
 
 export class ApiError extends Error {}
 
