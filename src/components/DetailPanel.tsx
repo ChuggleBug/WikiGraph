@@ -3,7 +3,6 @@ import type { GraphNode } from "../types";
 import {
     CheckIcon,
     ChevronDownIcon,
-    CloseIcon,
     ExternalIcon,
     PlusIcon,
     SpinnerIcon,
@@ -11,6 +10,7 @@ import {
     TrashIcon,
     PathIcon,
 } from "./icons";
+import CloseIcon from "@mui/icons-material/Close";
 import titleTransform from "../titleTransform";
 
 interface Props {
@@ -142,7 +142,7 @@ export function DetailPanel({
                     onClick={onClose}
                     aria-label="Close panel"
                 >
-                    <CloseIcon size={15} />
+                    <CloseIcon sx={{ fontSize: 24 }} />
                 </button>
 
                 <h2 className="wg-serif">{titleTransform(node.title)}</h2>
