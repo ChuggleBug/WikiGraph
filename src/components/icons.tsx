@@ -113,3 +113,23 @@ export const PathIcon = (props: IconBaseProps) => (
         <circle cx="416" cy="320" r="60" fill="none" strokeWidth="48" />
     </IconBase>
 );
+
+/**
+ * Node icon: a selected article and its links. Same Font Awesome solid style
+ * as PathIcon (512 viewBox, filled shapes, currentColor, IconBase props).
+ * The focal node is large and solid; its linked neighbours are smaller.
+ */
+export const NodeIcon = (props: IconBaseProps) => (
+    <IconBase attr={{ viewBox: "0 0 512 512" }} {...props}>
+        <path
+            d="M240 272 L88 120 M240 272 L424 128 M240 272 L392 424"
+            fill="none"
+            strokeWidth="44"
+            strokeLinecap="round"
+        />
+        <circle cx="240" cy="272" r="104" />
+        <circle cx="88" cy="120" r="64" />
+        <circle cx="424" cy="128" r="56" />
+        <circle cx="392" cy="424" r="56" />
+    </IconBase>
+);

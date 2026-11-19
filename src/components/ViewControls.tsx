@@ -49,9 +49,15 @@ export function ViewControls({
     return (
         <div className="wg-controls" ref={containerRef}>
             {/* Debut toggle */}
-            {/* <button style={{position: 'fixed', left: '5px', top: '5px'}} onClick={() => setOpen((prev) => !prev)}>
-        Toggle: {`${open}`}
-      </button> */}
+            {/* <button
+                style={{ position: "fixed", left: "5px", top: "5px" }}
+                onClick={() => setOpen((prev) => !prev)}
+            >
+                Toggle: {`${open}`}
+            </button> */}
+            {/* <div style={{ position: "fixed", left: "5px", top: "5px" }}>
+                {JSON.stringify(open)}
+            </div> */}
 
             {/* Main control panel */}
             <div className="wg-panel wg-controls-main">
@@ -86,6 +92,7 @@ export function ViewControls({
                     <TrashIcon />
                 </button>
             </div>
+
             {/* Conditional display */}
             <div
                 className={`wg-panel wg-controls-popup ${open ? "wg-controls-popup--open" : ""}`}

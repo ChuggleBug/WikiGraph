@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { GraphNode } from "../types";
 import {
     CheckIcon,
@@ -15,6 +15,7 @@ import titleTransform from "../titleTransform";
 
 export interface DetailPanelProps {
     open: boolean;
+    panelRef?: React.RefObject<HTMLDivElement | null>;
     node: GraphNode;
     nodeIds: Set<string>;
     pendingTitles: Set<string>;
@@ -25,6 +26,7 @@ export interface DetailPanelProps {
     onPathModeToggle: () => void;
     onLoadAll: () => void;
     onClose: () => void;
+    addTitle?: boolean;
 }
 
 const wikiUrl = (title: string) =>
@@ -77,7 +79,7 @@ function LinkRow({
 }
 
 export function DetailPanel({
-    open,
+    panelRef = useRef<HTMLDivElement>(null),
     node,
     nodeIds,
     pendingTitles,
@@ -88,6 +90,7 @@ export function DetailPanel({
     onPathModeToggle,
     onLoadAll,
     onClose,
+    addTitle = true,
 }: DetailPanelProps) {
     const [expanded, setExpanded] = useState(true);
 
@@ -102,7 +105,7 @@ export function DetailPanel({
     });
 
     const handleKeydown = (e: KeyboardEvent) => {
-        if (!panelRef.current) {
+        if (!panelRef?.current) {
             return;
         }
 
@@ -114,10 +117,8 @@ export function DetailPanel({
         }
     };
 
-    const panelRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
-        if (!panelRef.current) {
+        if (!panelRef?.current) {
             return;
         }
 
@@ -125,7 +126,7 @@ export function DetailPanel({
         return () => {
             window.addEventListener("keydown", handleKeydown);
         };
-    }, [panelRef.current]);
+    }, []);
 
     return (
         <>
@@ -133,96 +134,94 @@ export function DetailPanel({
             {/* <div style={{ position: "fixed" }}>
                 Detail Panel Open: {JSON.stringify({ open })}
             </div> */}
-            <div
-                ref={panelRef}
-                className={`wg-panel wg-dp ${open ? "wg-dp--open" : ""}`}
-            >
+            {addTitle && (
+                <>
+                    <button
+                        className="wg-dp-close-btn"
+                        onClick={onClose}
+                        aria-label="Close panel"
+                    >
+                        <CloseIcon sx={{ fontSize: 24 }} />
+                    </button>
+
+                    <h2 className="wg-serif">{titleTransform(node.title)}</h2>
+
+                    <div className="wg-dp-divider" />
+                </>
+            )}
+
+            <div className="wg-dp-stat">
+                <span className="n">{node.outboundCount}</span>
+                <span className="u">Outbound links</span>
                 <button
-                    className="wg-dp-close-btn"
-                    onClick={onClose}
-                    aria-label="Close panel"
+                    className="wg-dp-toggle"
+                    aria-expanded={expanded}
+                    onClick={() => setExpanded((v) => !v)}
                 >
-                    <CloseIcon sx={{ fontSize: 24 }} />
+                    {expanded ? "Hide list" : "Show list"}
+                    <ChevronDownIcon size={12} />
                 </button>
+                <button
+                    className="wg-dp-path"
+                    aria-label="Find path"
+                    title="Find path"
+                    onClick={onPathModeToggle}
+                >
+                    <PathIcon size={14} />
+                </button>
+            </div>
 
-                <h2 className="wg-serif">{titleTransform(node.title)}</h2>
-
-                <div className="wg-dp-divider" />
-
-                <div className="wg-dp-stat">
-                    <span className="n">{node.outboundCount}</span>
-                    <span className="u">Outbound links</span>
-                    <button
-                        className="wg-dp-toggle"
-                        aria-expanded={expanded}
-                        onClick={() => setExpanded((v) => !v)}
-                    >
-                        {expanded ? "Hide list" : "Show list"}
-                        <ChevronDownIcon size={12} />
-                    </button>
-                    <button
-                        className="wg-dp-path"
-                        aria-label="Find path"
-                        title="Find path"
-                        onClick={onPathModeToggle}
-                    >
-                        <PathIcon size={14} />
-                    </button>
-                </div>
-
-                {expanded && (
-                    <div className="wg-lk">
-                        <div className="wg-kicker">Linked articles</div>
-                        <div className="wg-lk-list">
-                            <div className="wg-lk-scroll">
-                                {node.links.sort().map((title) => (
-                                    <LinkRow
-                                        key={title}
-                                        title={title}
-                                        here={nodeIds.has(title)}
-                                        pending={pendingTitles.has(title)}
-                                        onAdd={onAdd}
-                                        onSelectExisting={onSelectExisting}
-                                    />
+            {expanded && (
+                <div className="wg-lk">
+                    <div className="wg-kicker">Linked articles</div>
+                    <div className="wg-lk-list">
+                        <div className="wg-lk-scroll">
+                            {node.links.sort().map((title) => (
+                                <LinkRow
+                                    key={title}
+                                    title={title}
+                                    here={nodeIds.has(title)}
+                                    pending={pendingTitles.has(title)}
+                                    onAdd={onAdd}
+                                    onSelectExisting={onSelectExisting}
+                                />
+                            ))}
+                        </div>
+                        <div className="wg-lk-foot">
+                            <span>{onCanvas} on canvas</span>
+                            <span>{node.links.length - onCanvas} not yet</span>
+                            {hiddenCount > 0 &&
+                                (loadingAll ? (
+                                    <span>loading…</span>
+                                ) : (
+                                    <button onClick={onLoadAll}>
+                                        show all {node.outboundCount}
+                                    </button>
                                 ))}
-                            </div>
-                            <div className="wg-lk-foot">
-                                <span>{onCanvas} on canvas</span>
-                                <span>
-                                    {node.links.length - onCanvas} not yet
-                                </span>
-                                {hiddenCount > 0 &&
-                                    (loadingAll ? (
-                                        <span>loading…</span>
-                                    ) : (
-                                        <button onClick={onLoadAll}>
-                                            show all {node.outboundCount}
-                                        </button>
-                                    ))}
-                            </div>
                         </div>
                     </div>
-                )}
-
-                <div className="wg-dp-actions">
-                    <a
-                        className="wg-navigate-btn"
-                        href={wikiUrl(node.title)}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Open on Wikipedia
-                        <ExternalIcon size={13} />
-                    </a>
-                    <button
-                        className="wg-icbtn wg-icbtn--danger"
-                        onClick={() => onDelete(node.id)}
-                        aria-label="Delete selected node"
-                    >
-                        <TrashIcon size={24} />
-                    </button>
                 </div>
+            )}
+
+            <div className="wg-dp-actions">
+                <a
+                    className="wg-navigate-btn"
+                    href={wikiUrl(node.title)}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Open on Wikipedia
+                    <ExternalIcon size={13} />
+                </a>
+                <button
+                    className="wg-icbtn wg-icbtn--danger"
+                    onClick={() => onDelete(node.id)}
+                    aria-label="Delete selected node"
+                >
+                    <TrashIcon size={24} />
+                </button>
             </div>
+            {/* </div> */}
         </>
     );
 }
