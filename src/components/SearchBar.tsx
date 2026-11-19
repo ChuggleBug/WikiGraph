@@ -191,7 +191,9 @@ export function SearchBar({
                 <div className="wg-search-field">
                     {/* Input text box */}
                     {pathMode ? <PathIcon size={16} /> : <FaSearch size={16} />}
+                    {/* manually set to 16px to prevent zoom in */}
                     <input
+                        style={{ fontSize: 16 }}
                         name="search bar"
                         ref={inputRef}
                         value={query}
