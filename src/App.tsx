@@ -9,6 +9,10 @@ import { GraphCanvas } from "./graph/GraphCanvas";
 import { useGraphStore } from "./graph/useGraphStore";
 import { useView } from "./graph/useView";
 import titleTransform from "./titleTransform";
+import MobileContentPopup from "./components/MobileContentPopup";
+import { NAV_HINTS } from "./desktopNavHints";
+import { isMobile } from "react-device-detect";
+import { FaSearch } from "react-icons/fa";
 
 export default function App() {
     const store = useGraphStore();
@@ -152,10 +156,16 @@ export default function App() {
     const zoomCenter = (factor: number) =>
         zoomAt(factor, window.innerWidth / 2, window.innerHeight / 2);
 
+    const [popupOpen, setPopupOpen] = useState(false);
+    const closeMobilePopup = () => {
+        setPopupOpen(false);
+    };
+
     const panelOpen = !!store.selectedNode;
 
     const onPick = async (title: string) => {
         // When the panel is open, then "shortest path lookup is requested"
+        closeMobilePopup();
         if (panelOpen) {
             return findPath(title);
         }
@@ -172,6 +182,52 @@ export default function App() {
 
     return (
         <div className="wg-root">
+            {/* Search bars make the new node selected */}
+            {!isMobile ? (
+                <div className="wg-search-desktop-wrapper">
+                    <SearchBar
+                        onPick={onPick}
+                        placeholder={
+                            pathMode
+                                ? `Find a Path from ${pathTruncatedTitle}`
+                                : "Search Wikipedia articles..."
+                        }
+                        pathMode={pathMode}
+                        navHints={NAV_HINTS}
+                    />
+                </div>
+            ) : (
+                <MobileContentPopup
+                    displayText="Search"
+                    open={popupOpen}
+                    onClose={closeMobilePopup}
+                >
+                    {/* Search bars make the new node selected */}
+                    <SearchBar
+                        onPick={onPick}
+                        placeholder={
+                            pathMode
+                                ? `Find a Path from ${pathTruncatedTitle}`
+                                : "Search Wikipedia articles..."
+                        }
+                        pathMode={pathMode}
+                        stickyResults={true}
+                    />
+                </MobileContentPopup>
+            )}
+
+            {isMobile && (
+                <button
+                    className="wg-panel wg-search-fab"
+                    onClick={() => setPopupOpen(true)}
+                    aria-label="Search"
+                >
+                    <span className="wg-icbtn">
+                        <FaSearch size={16} />
+                    </span>
+                </button>
+            )}
+
             {/* Fixed to top left */}
             <Wordmark />
 
@@ -188,18 +244,6 @@ export default function App() {
                     setPathMode(false);
                 }}
             />
-
-            {/* Search bars make the new node selected */}
-            <SearchBar
-                onPick={onPick}
-                placeholder={
-                    pathMode
-                        ? `Find a Path from ${pathTruncatedTitle}`
-                        : "Search Wikipedia articles..."
-                }
-                pathMode={pathMode}
-            />
-
             {store.selectedNode && (
                 <DetailPanel
                     open={panelOpen}
@@ -221,7 +265,6 @@ export default function App() {
                     }}
                 />
             )}
-
             <ViewControls
                 onZoomIn={() => zoomCenter(1.2)}
                 onZoomOut={() => zoomCenter(1 / 1.2)}
@@ -230,7 +273,6 @@ export default function App() {
                 canClear={store.nodes.length > 0}
             />
             <Legend />
-
             {toast && <div className="wg-toast">{toast}</div>}
         </div>
     );

@@ -1,14 +1,24 @@
-import { useId, useRef, useState } from "react";
+import React, { useId, useRef, useState } from "react";
 import { ApiError, searchTitles, type SearchElement } from "../api";
 import { PathIcon, SpinnerIcon } from "./icons";
 import titleTransform, { textTrim } from "../titleTransform";
 import { FaLongArrowAltLeft, FaSearch } from "react-icons/fa";
+
+export type NavSearchState = "search" | "results" | "always";
+
+export interface NavHint {
+    on: ReadonlyArray<NavSearchState> | NavSearchState;
+    symbol: string;
+    hint: string;
+}
 
 interface Props {
     /** Resolves to whether the title was actually added (false if the API doesn't track it). */
     onPick: (title: string) => Promise<boolean>;
     placeholder: string;
     pathMode: boolean;
+    navHints?: ReadonlyArray<NavHint>;
+    stickyResults?: boolean;
 }
 
 type Status = "idle" | "loading" | "done" | "error";
@@ -26,7 +36,13 @@ function parseWikipediaUrl(value: string): string | null {
     }
 }
 
-export function SearchBar({ onPick, placeholder, pathMode }: Props) {
+export function SearchBar({
+    onPick,
+    placeholder,
+    pathMode,
+    navHints = [],
+    stickyResults = false,
+}: Props) {
     // State of the search bar itself
     const [focused, setFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -42,6 +58,7 @@ export function SearchBar({ onPick, placeholder, pathMode }: Props) {
     const [error, setError] = useState("");
     const [active, setActive] = useState(0);
     const listId = useId();
+    const helpId = useId();
 
     const [prevPlaceholder, setPrevPlaceholder] = useState(placeholder);
 
@@ -135,7 +152,7 @@ export function SearchBar({ onPick, placeholder, pathMode }: Props) {
     };
 
     return (
-        <div className={`wg-panel wg-search${open ? " wg-search--open" : ""}`}>
+        <div className={`wg-panel wg-search ${open ? "wg-search--open" : ""}`}>
             {/* Debug block showing internal state */}
             {/* <div
                 style={{
@@ -171,35 +188,47 @@ export function SearchBar({ onPick, placeholder, pathMode }: Props) {
                     }
                 }}
             >
-                {/* Input text box */}
-                {pathMode ? <PathIcon size={16} /> : <FaSearch size={16} />}
-                <input
-                    name="search bar"
-                    ref={inputRef}
-                    value={query}
-                    onChange={(e) => changeQuery(e.target.value)}
-                    onFocus={() => {
-                        if (blurTimeoutRef.current !== null) {
-                            clearTimeout(blurTimeoutRef.current);
-                            blurTimeoutRef.current = null;
-                        }
-                        setFocused(true);
-                    }}
-                    onBlur={() => {
-                        blurTimeoutRef.current = setTimeout(() => {
-                            blurTimeoutRef.current = null;
-                            setFocused(false);
-                        }, 10);
-                    }}
-                    onKeyDown={onKeyDown}
-                    placeholder={placeholder}
-                    aria-expanded={open}
-                    aria-controls={listId}
-                    aria-autocomplete="list"
-                />
+                <div className="wg-search-field">
+                    {/* Input text box */}
+                    {pathMode ? <PathIcon size={16} /> : <FaSearch size={16} />}
+                    <input
+                        name="search bar"
+                        ref={inputRef}
+                        value={query}
+                        onChange={(e) => changeQuery(e.target.value)}
+                        onFocus={() => {
+                            if (blurTimeoutRef.current !== null) {
+                                clearTimeout(blurTimeoutRef.current);
+                                blurTimeoutRef.current = null;
+                            }
+                            setFocused(true);
+                        }}
+                        onBlur={() => {
+                            blurTimeoutRef.current = setTimeout(() => {
+                                blurTimeoutRef.current = null;
+                                setFocused(false);
+                            }, 10);
+                        }}
+                        onKeyDown={onKeyDown}
+                        placeholder={placeholder}
+                        aria-expanded={open}
+                        aria-controls={listId}
+                        aria-autocomplete="list"
+                    />
+                </div>
+
+                <div className="wg-search-status">
+                    {status === "loading" && <SpinnerIcon size={14} />}
+                    {!stale && status === "done" && (
+                        <span className="wg-search-count">
+                            {searchResults.length}{" "}
+                            {searchResults.length === 1 ? "result" : "results"}
+                        </span>
+                    )}
+                </div>
             </div>
 
-            {focused && (
+            {(focused || (searchResults.length > 0 && stickyResults)) && (
                 <>
                     <div className="wg-results" id={listId} role="listbox">
                         {!stale && status === "error" && (
@@ -280,39 +309,43 @@ export function SearchBar({ onPick, placeholder, pathMode }: Props) {
                             })}
                     </div>
 
-                    <div
-                        className="wg-search-foot"
-                        results-shown={`${submissionChanged}`}
-                    >
-                        <div className="wg-search-foot-help">
-                            {!stale && status !== "error" && (
-                                <span>
-                                    <b>↑↓ (arrows)</b> navigate
-                                </span>
-                            )}
-                            <span>
-                                <b>↵ (enter)</b>{" "}
-                                {stale && status !== "error"
-                                    ? "search"
-                                    : "add to graph"}
-                            </span>
-                            <span>
-                                <b>esc</b> dismiss
-                            </span>
+                    {navHints.length > 0 && (
+                        <div
+                            className="wg-search-foot"
+                            results-shown={`${submissionChanged}`}
+                        >
+                            <div className="wg-search-foot-help">
+                                {navHints
+                                    .filter((h) => {
+                                        return (
+                                            Array.isArray(h.on) ? h.on : [h.on]
+                                        ).some((on) => {
+                                            switch (on) {
+                                                case "always":
+                                                    return true;
+                                                case "search":
+                                                    return (
+                                                        stale &&
+                                                        status !== "error"
+                                                    );
+                                                case "results":
+                                                    return (
+                                                        searchResults.length !=
+                                                        0
+                                                    );
+                                            }
+                                        });
+                                    })
+                                    .map((h) => {
+                                        return (
+                                            <span key={helpId}>
+                                                <b>{h.symbol}</b> {h.hint}
+                                            </span>
+                                        );
+                                    })}
+                            </div>
                         </div>
-
-                        <div>
-                            {status === "loading" && <SpinnerIcon size={14} />}
-                            {!stale && status === "done" && (
-                                <span className="wg-search-count">
-                                    {searchResults.length}{" "}
-                                    {searchResults.length === 1
-                                        ? "result"
-                                        : "results"}
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                    )}
                 </>
             )}
         </div>
