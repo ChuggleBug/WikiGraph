@@ -84,11 +84,14 @@ h2 {
     line-height: 1.15;
 }
 
-hr {
-    height: 1px;
+hr,
+.wg-divider {
+    flex-shrink: 0;
+    background: var(--wg-line-soft);
+    height: 2px;
     width: 100%;
+    margin: 15px 0 13px;
     border: none;
-    background-color: var(--wg-border-strong);
 }
 
 /* ---------- shell ---------- */
@@ -513,12 +516,6 @@ hr {
     color: var(--wg-ink-soft);
 }
 
-.wg-dp-divider {
-    height: 1px;
-    background: var(--wg-line-soft);
-    margin: 15px 0 13px;
-}
-
 .wg-dp-stat {
     display: flex;
     align-items: flex-end;
@@ -577,9 +574,6 @@ hr {
 }
 
 .wg-lk {
-    margin-top: 16px;
-    border-top: 1px solid var(--wg-line-soft);
-    padding-top: 14px;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -668,7 +662,6 @@ hr {
 }
 
 .wg-dp-actions {
-    margin-top: 16px;
     display: flex;
     gap: 9px;
     align-items: center;

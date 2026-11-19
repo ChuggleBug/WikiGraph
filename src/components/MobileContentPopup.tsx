@@ -33,7 +33,7 @@ export default function MobileContentPopup({
                         <CloseIcon sx={{ fontSize: 24 }} />
                     </button>
                 </div>
-                <hr />
+                <div className="wg-divider" />
                 {children}
             </div>
         </div>

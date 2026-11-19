@@ -146,7 +146,7 @@ export function DetailPanel({
 
                     <h2 className="wg-serif">{titleTransform(node.title)}</h2>
 
-                    <div className="wg-dp-divider" />
+                    <div className="wg-divider" />
                 </>
             )}
 
@@ -171,36 +171,42 @@ export function DetailPanel({
                 </button>
             </div>
 
+            <div className="wg-divider" />
             {expanded && (
-                <div className="wg-lk">
-                    <div className="wg-kicker">Linked articles</div>
-                    <div className="wg-lk-list">
-                        <div className="wg-lk-scroll">
-                            {node.links.sort().map((title) => (
-                                <LinkRow
-                                    key={title}
-                                    title={title}
-                                    here={nodeIds.has(title)}
-                                    pending={pendingTitles.has(title)}
-                                    onAdd={onAdd}
-                                    onSelectExisting={onSelectExisting}
-                                />
-                            ))}
-                        </div>
-                        <div className="wg-lk-foot">
-                            <span>{onCanvas} on canvas</span>
-                            <span>{node.links.length - onCanvas} not yet</span>
-                            {hiddenCount > 0 &&
-                                (loadingAll ? (
-                                    <span>loading…</span>
-                                ) : (
-                                    <button onClick={onLoadAll}>
-                                        show all {node.outboundCount}
-                                    </button>
+                <>
+                    <div className="wg-lk">
+                        <div className="wg-kicker">Linked articles</div>
+                        <div className="wg-lk-list">
+                            <div className="wg-lk-scroll">
+                                {node.links.sort().map((title) => (
+                                    <LinkRow
+                                        key={title}
+                                        title={title}
+                                        here={nodeIds.has(title)}
+                                        pending={pendingTitles.has(title)}
+                                        onAdd={onAdd}
+                                        onSelectExisting={onSelectExisting}
+                                    />
                                 ))}
+                            </div>
+                            <div className="wg-lk-foot">
+                                <span>{onCanvas} on canvas</span>
+                                <span>
+                                    {node.links.length - onCanvas} not yet
+                                </span>
+                                {hiddenCount > 0 &&
+                                    (loadingAll ? (
+                                        <span>loading…</span>
+                                    ) : (
+                                        <button onClick={onLoadAll}>
+                                            show all {node.outboundCount}
+                                        </button>
+                                    ))}
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div className="wg-divider" />
+                </>
             )}
 
             <div className="wg-dp-actions">
