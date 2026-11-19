@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, checkStatus, fetchLinks, getShortestPath } from "./api";
-import { DetailPanel } from "./components/DetailPanel";
 import { Legend } from "./components/Legend";
-import { SearchBar } from "./components/SearchBar";
 import { ViewControls } from "./components/ViewControls";
 import { Wordmark } from "./components/Wordmark";
 import { GraphCanvas } from "./graph/GraphCanvas";
 import { useGraphStore } from "./graph/useGraphStore";
 import { useView } from "./graph/useView";
 import titleTransform from "./titleTransform";
+import { NAV_HINTS } from "./desktopNavHints";
+import { isMobile } from "react-device-detect";
+import GraphControls from "./GraphControls";
 
 export default function App() {
     const store = useGraphStore();
@@ -19,6 +20,7 @@ export default function App() {
     const [toast, setToast] = useState<string | null>(null);
     const toastTimer = useRef<number | undefined>(undefined);
     const [pathMode, setPathMode] = useState(false);
+    const [dragLocked, setDragLocked] = useState(false);
 
     const showToast = useCallback((message: string) => {
         setToast(message);
@@ -152,10 +154,16 @@ export default function App() {
     const zoomCenter = (factor: number) =>
         zoomAt(factor, window.innerWidth / 2, window.innerHeight / 2);
 
+    const [popupOpen, setPopupOpen] = useState(false);
+    const closeMobilePopup = () => {
+        setPopupOpen(false);
+    };
+
     const panelOpen = !!store.selectedNode;
 
     const onPick = async (title: string) => {
         // When the panel is open, then "shortest path lookup is requested"
+        closeMobilePopup();
         if (panelOpen) {
             return findPath(title);
         }
@@ -172,6 +180,43 @@ export default function App() {
 
     return (
         <div className="wg-root">
+            <GraphControls
+                isMobile={isMobile}
+                mobilePopup={{
+                    open: popupOpen,
+                    onOpen: () => setPopupOpen(true),
+                    onClose: closeMobilePopup,
+                }}
+                searchBar={{
+                    onPick,
+                    placeholder: pathMode
+                        ? `Find a Path from ${pathTruncatedTitle}`
+                        : "Search Wikipedia articles...",
+                    pathMode,
+                    navHints: NAV_HINTS,
+                    stickyResults: isMobile,
+                }}
+                detailPanel={{
+                    open: panelOpen,
+                    node: store.selectedNode,
+                    nodeIds: store.nodeIds,
+                    pendingTitles: pending,
+                    loadingAll: loadingAll,
+                    onAdd: (t) => addTitle(t, false),
+                    onDelete: (t) => {
+                        store.delete(t);
+                        setPathMode(false);
+                    },
+                    onSelectExisting: store.select,
+                    onLoadAll: loadAllLinks,
+                    onPathModeToggle: () => setPathMode((v) => !v),
+                    onClose: () => {
+                        store.closePanel();
+                        setPathMode(false);
+                    },
+                }}
+            />
+
             {/* Fixed to top left */}
             <Wordmark />
 
@@ -182,6 +227,7 @@ export default function App() {
                 view={view}
                 onPanBy={panBy}
                 onZoomAt={zoomAt}
+                dragLocked={isMobile && dragLocked}
                 onSelectNode={store.select}
                 onBackgroundClick={() => {
                     store.closePanel();
@@ -189,48 +235,17 @@ export default function App() {
                 }}
             />
 
-            {/* Search bars make the new node selected */}
-            <SearchBar
-                onPick={onPick}
-                placeholder={
-                    pathMode
-                        ? `Find a Path from ${pathTruncatedTitle}`
-                        : "Search Wikipedia articles..."
-                }
-                pathMode={pathMode}
-            />
-
-            {store.selectedNode && (
-                <DetailPanel
-                    open={panelOpen}
-                    node={store.selectedNode}
-                    nodeIds={store.nodeIds}
-                    pendingTitles={pending}
-                    loadingAll={loadingAll}
-                    onAdd={(t) => addTitle(t, false)}
-                    onDelete={(t) => {
-                        store.delete(t);
-                        setPathMode(false);
-                    }}
-                    onSelectExisting={store.select}
-                    onLoadAll={loadAllLinks}
-                    onPathModeToggle={() => setPathMode((v) => !v)}
-                    onClose={() => {
-                        store.closePanel();
-                        setPathMode(false);
-                    }}
-                />
-            )}
-
             <ViewControls
                 onZoomIn={() => zoomCenter(1.2)}
                 onZoomOut={() => zoomCenter(1 / 1.2)}
                 onReset={reset}
                 onClear={store.clear}
                 canClear={store.nodes.length > 0}
+                showDragLock={isMobile}
+                dragLocked={dragLocked}
+                onToggleDragLock={() => setDragLocked((v) => !v)}
             />
             <Legend />
-
             {toast && <div className="wg-toast">{toast}</div>}
         </div>
     );

@@ -1,12 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { FitIcon, MinusIcon, PlusIcon, TrashIcon } from "./icons";
+import AddIcon from "@mui/icons-material/AddRounded";
+import RemoveIcon from "@mui/icons-material/RemoveRounded";
+import CropFreeIcon from "@mui/icons-material/CropFreeRounded";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 
-interface Props {
+export interface ViewControlsProps {
     onZoomIn: () => void;
     onZoomOut: () => void;
     onReset: () => void;
     onClear: () => void;
     canClear: boolean;
+    /** Show the drag-lock toggle (mobile only). */
+    showDragLock?: boolean;
+    dragLocked?: boolean;
+    onToggleDragLock?: () => void;
 }
 
 export function ViewControls({
@@ -15,7 +24,10 @@ export function ViewControls({
     onReset,
     onClear,
     canClear,
-}: Props) {
+    showDragLock = false,
+    dragLocked = false,
+    onToggleDragLock,
+}: ViewControlsProps) {
     const [open, setOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,9 +61,15 @@ export function ViewControls({
     return (
         <div className="wg-controls" ref={containerRef}>
             {/* Debut toggle */}
-            {/* <button style={{position: 'fixed', left: '5px', top: '5px'}} onClick={() => setOpen((prev) => !prev)}>
-        Toggle: {`${open}`}
-      </button> */}
+            {/* <button
+                style={{ position: "fixed", left: "5px", top: "5px" }}
+                onClick={() => setOpen((prev) => !prev)}
+            >
+                Toggle: {`${open}`}
+            </button> */}
+            {/* <div style={{ position: "fixed", left: "5px", top: "5px" }}>
+                {JSON.stringify(open)}
+            </div> */}
 
             {/* Main control panel */}
             <div className="wg-panel wg-controls-main">
@@ -60,22 +78,38 @@ export function ViewControls({
                     onClick={onZoomIn}
                     aria-label="Zoom in"
                 >
-                    <PlusIcon size={18} />
+                    <AddIcon sx={{ fontSize: 18 }} />
                 </button>
                 <button
                     className="wg-icbtn"
                     onClick={onZoomOut}
                     aria-label="Zoom out"
                 >
-                    <MinusIcon />
+                    <RemoveIcon sx={{ fontSize: 18 }} />
                 </button>
                 <button
                     className="wg-icbtn"
                     onClick={onReset}
                     aria-label="Reset view"
                 >
-                    <FitIcon />
+                    <CropFreeIcon sx={{ fontSize: 17 }} />
                 </button>
+                {showDragLock && (
+                    <button
+                        className={`wg-icbtn ${dragLocked ? "wg-icbtn--active" : ""}`}
+                        onClick={onToggleDragLock}
+                        aria-label={
+                            dragLocked ? "Allow dragging" : "Lock dragging"
+                        }
+                        aria-pressed={dragLocked}
+                    >
+                        {dragLocked ? (
+                            <LockOutlinedIcon sx={{ fontSize: 17 }} />
+                        ) : (
+                            <LockOpenOutlinedIcon sx={{ fontSize: 17 }} />
+                        )}
+                    </button>
+                )}
                 <div className="sep" />
                 <button
                     className={`wg-icbtn wg-icbtn--danger ${open ? "wg-icbtn--hovered" : ""}`}
@@ -83,9 +117,10 @@ export function ViewControls({
                     disabled={!canClear}
                     aria-label="Clear canvas"
                 >
-                    <TrashIcon />
+                    <DeleteOutlineRoundedIcon sx={{ fontSize: 17 }} />
                 </button>
             </div>
+
             {/* Conditional display */}
             <div
                 className={`wg-panel wg-controls-popup ${open ? "wg-controls-popup--open" : ""}`}

@@ -1,20 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { GraphNode } from "../types";
-import {
-    CheckIcon,
-    ChevronDownIcon,
-    CloseIcon,
-    ExternalIcon,
-    PlusIcon,
-    SpinnerIcon,
-    ArrowRightIcon,
-    TrashIcon,
-    PathIcon,
-} from "./icons";
+import { PathIcon } from "./icons";
+import CircularProgress from "@mui/material/CircularProgress";
+import CheckIcon from "@mui/icons-material/CheckRounded";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMoreRounded";
+import OpenInNewIcon from "@mui/icons-material/OpenInNewRounded";
+import AddIcon from "@mui/icons-material/AddRounded";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForwardRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 import titleTransform from "../titleTransform";
 
-interface Props {
+export interface DetailPanelProps {
     open: boolean;
+    panelRef?: React.RefObject<HTMLDivElement | null>;
     node: GraphNode;
     nodeIds: Set<string>;
     pendingTitles: Set<string>;
@@ -25,12 +24,13 @@ interface Props {
     onPathModeToggle: () => void;
     onLoadAll: () => void;
     onClose: () => void;
+    addTitle?: boolean;
 }
 
 const wikiUrl = (title: string) =>
     `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
 
-interface LinkRowProps {
+export interface LinkRowProps {
     title: string;
     here: boolean;
     pending: boolean;
@@ -57,19 +57,19 @@ function LinkRow({
             <span className="wg-lk-name">{titleTransform(title)}</span>
             {pending ? (
                 <span className="wg-lk-add">
-                    <SpinnerIcon size={12} />
+                    <CircularProgress size={12} thickness={5} color="inherit" />
                 </span>
             ) : here ? (
                 <span className="wg-lk-on" title="on canvas">
                     {hovered ? (
-                        <ArrowRightIcon size={12} />
+                        <ArrowForwardIcon sx={{ fontSize: 12 }} />
                     ) : (
-                        <CheckIcon size={12} />
+                        <CheckIcon sx={{ fontSize: 12 }} />
                     )}
                 </span>
             ) : (
                 <span className="wg-lk-add" title="add to canvas">
-                    <PlusIcon size={12} />
+                    <AddIcon sx={{ fontSize: 12 }} />
                 </span>
             )}
         </button>
@@ -77,7 +77,7 @@ function LinkRow({
 }
 
 export function DetailPanel({
-    open,
+    panelRef = useRef<HTMLDivElement>(null),
     node,
     nodeIds,
     pendingTitles,
@@ -88,7 +88,8 @@ export function DetailPanel({
     onPathModeToggle,
     onLoadAll,
     onClose,
-}: Props) {
+    addTitle = true,
+}: DetailPanelProps) {
     const [expanded, setExpanded] = useState(true);
 
     const onCanvas = node.links.filter((l) => nodeIds.has(l)).length;
@@ -102,7 +103,7 @@ export function DetailPanel({
     });
 
     const handleKeydown = (e: KeyboardEvent) => {
-        if (!panelRef.current) {
+        if (!panelRef?.current) {
             return;
         }
 
@@ -114,10 +115,8 @@ export function DetailPanel({
         }
     };
 
-    const panelRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
-        if (!panelRef.current) {
+        if (!panelRef?.current) {
             return;
         }
 
@@ -125,7 +124,7 @@ export function DetailPanel({
         return () => {
             window.addEventListener("keydown", handleKeydown);
         };
-    }, [panelRef.current]);
+    }, []);
 
     return (
         <>
@@ -133,44 +132,46 @@ export function DetailPanel({
             {/* <div style={{ position: "fixed" }}>
                 Detail Panel Open: {JSON.stringify({ open })}
             </div> */}
-            <div
-                ref={panelRef}
-                className={`wg-panel wg-dp ${open ? "wg-dp--open" : ""}`}
-            >
+            {addTitle && (
+                <>
+                    <button
+                        className="wg-dp-close-btn"
+                        onClick={onClose}
+                        aria-label="Close panel"
+                    >
+                        <CloseIcon sx={{ fontSize: 24 }} />
+                    </button>
+
+                    <h2 className="wg-serif">{titleTransform(node.title)}</h2>
+
+                    <div className="wg-divider" />
+                </>
+            )}
+
+            <div className="wg-dp-stat">
+                <span className="n">{node.outboundCount}</span>
+                <span className="u">Outbound links</span>
                 <button
-                    className="wg-dp-close-btn"
-                    onClick={onClose}
-                    aria-label="Close panel"
+                    className="wg-dp-toggle"
+                    aria-expanded={expanded}
+                    onClick={() => setExpanded((v) => !v)}
                 >
-                    <CloseIcon size={15} />
+                    {expanded ? "Hide list" : "Show list"}
+                    <ExpandMoreIcon sx={{ fontSize: 12 }} />
                 </button>
+                <button
+                    className="wg-dp-path"
+                    aria-label="Find path"
+                    title="Find path"
+                    onClick={onPathModeToggle}
+                >
+                    <PathIcon size={14} />
+                </button>
+            </div>
 
-                <h2 className="wg-serif">{titleTransform(node.title)}</h2>
-
-                <div className="wg-dp-divider" />
-
-                <div className="wg-dp-stat">
-                    <span className="n">{node.outboundCount}</span>
-                    <span className="u">Outbound links</span>
-                    <button
-                        className="wg-dp-toggle"
-                        aria-expanded={expanded}
-                        onClick={() => setExpanded((v) => !v)}
-                    >
-                        {expanded ? "Hide list" : "Show list"}
-                        <ChevronDownIcon size={12} />
-                    </button>
-                    <button
-                        className="wg-dp-path"
-                        aria-label="Find path"
-                        title="Find path"
-                        onClick={onPathModeToggle}
-                    >
-                        <PathIcon size={14} />
-                    </button>
-                </div>
-
-                {expanded && (
+            <div className="wg-divider" />
+            {expanded && (
+                <>
                     <div className="wg-lk">
                         <div className="wg-kicker">Linked articles</div>
                         <div className="wg-lk-list">
@@ -202,27 +203,29 @@ export function DetailPanel({
                             </div>
                         </div>
                     </div>
-                )}
+                    <div className="wg-divider" />
+                </>
+            )}
 
-                <div className="wg-dp-actions">
-                    <a
-                        className="wg-navigate-btn"
-                        href={wikiUrl(node.title)}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Open on Wikipedia
-                        <ExternalIcon size={13} />
-                    </a>
-                    <button
-                        className="wg-icbtn wg-icbtn--danger"
-                        onClick={() => onDelete(node.id)}
-                        aria-label="Delete selected node"
-                    >
-                        <TrashIcon size={24} />
-                    </button>
-                </div>
+            <div className="wg-dp-actions">
+                <a
+                    className="wg-navigate-btn"
+                    href={wikiUrl(node.title)}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Open on Wikipedia
+                    <OpenInNewIcon sx={{ fontSize: 13 }} />
+                </a>
+                <button
+                    className="wg-icbtn wg-icbtn--danger"
+                    onClick={() => onDelete(node.id)}
+                    aria-label="Delete selected node"
+                >
+                    <DeleteOutlineRoundedIcon sx={{ fontSize: 24 }} />
+                </button>
             </div>
+            {/* </div> */}
         </>
     );
 }
