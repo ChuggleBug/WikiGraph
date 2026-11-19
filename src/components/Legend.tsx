@@ -8,30 +8,32 @@ export function Legend() {
                 </svg>
                 node size = outbound links
             </span>
-            <span>
-                <svg width="30" height="10" aria-hidden="true">
-                    <line
-                        className="wg-edge--directed"
-                        x1="1"
-                        y1="5"
-                        x2="29"
-                        y2="5"
-                    />
-                </svg>
-                links to
-            </span>
-            <span>
-                <svg width="30" height="10" aria-hidden="true">
-                    <line
-                        className="wg-edge--mutual"
-                        x1="1"
-                        y1="5"
-                        x2="29"
-                        y2="5"
-                    />
-                </svg>
-                mutual
-            </span>
+            <div className="wg-legend-directions">
+                <span>
+                    <svg width="30" height="10" aria-hidden="true">
+                        <line
+                            className="wg-edge--directed"
+                            x1="1"
+                            y1="5"
+                            x2="29"
+                            y2="5"
+                        />
+                    </svg>
+                    links to
+                </span>
+                <span>
+                    <svg width="30" height="10" aria-hidden="true">
+                        <line
+                            className="wg-edge--mutual"
+                            x1="1"
+                            y1="5"
+                            x2="29"
+                            y2="5"
+                        />
+                    </svg>
+                    mutual
+                </span>
+            </div>
         </div>
     );
 }

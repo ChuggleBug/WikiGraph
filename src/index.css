@@ -789,7 +789,7 @@ hr,
 .wg-legend {
     position: absolute;
     bottom: 38px;
-    z-index: var(--wg-z-chrome);
+    z-index: calc(var(--wg-z-chrome) - 1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -806,9 +806,18 @@ hr,
     gap: 8px;
 }
 
-@media (max-width: 900px) {
+.wg-legend-directions {
+    display: contents;
+}
+
+@media (max-width: 550px) {
     .wg-legend {
-        display: none;
+        display: flex;
+        flex-direction: column;
+    }
+    .wg-legend-directions {
+        display: flex;
+        gap: 18px;
     }
 }
 
