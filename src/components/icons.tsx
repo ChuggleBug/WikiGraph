@@ -1,7 +1,7 @@
 import { IconBase, type IconBaseProps } from "react-icons";
 
 /** Small stroke-based icon set, sized via the `size` prop. */
-interface IconProps {
+export interface IconProps {
     size?: number;
 }
 

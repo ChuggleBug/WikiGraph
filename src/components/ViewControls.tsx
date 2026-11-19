@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FitIcon, MinusIcon, PlusIcon, TrashIcon } from "./icons";
 
-interface Props {
+export interface ViewControlsProps {
     onZoomIn: () => void;
     onZoomOut: () => void;
     onReset: () => void;
@@ -15,7 +15,7 @@ export function ViewControls({
     onReset,
     onClear,
     canClear,
-}: Props) {
+}: ViewControlsProps) {
     const [open, setOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 

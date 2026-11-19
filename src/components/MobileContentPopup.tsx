@@ -1,7 +1,7 @@
 import type React from "react";
 import CloseIcon from "@mui/icons-material/Close";
 
-export type Props = {
+export type MobileContentPopupProps = {
     displayText: string;
     children: React.ReactNode;
     open: boolean;
@@ -13,7 +13,7 @@ export default function MobileContentPopup({
     children,
     open,
     onClose,
-}: Props) {
+}: MobileContentPopupProps) {
     return (
         <div>
             <div

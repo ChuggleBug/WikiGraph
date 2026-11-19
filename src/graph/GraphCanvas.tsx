@@ -4,7 +4,7 @@ import { useForceLayout } from "./useForceLayout";
 import type { View } from "./useView";
 import titleTransform from "../titleTransform";
 
-interface Props {
+export interface GraphCanvasProps {
     nodes: GraphNode[];
     edges: GraphEdge[];
     selectedId: string | null;
@@ -26,7 +26,7 @@ export function GraphCanvas({
     onZoomAt,
     onSelectNode,
     onBackgroundClick,
-}: Props) {
+}: GraphCanvasProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(
         null,

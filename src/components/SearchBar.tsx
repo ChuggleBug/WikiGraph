@@ -12,7 +12,7 @@ export interface NavHint {
     hint: string;
 }
 
-interface Props {
+export interface SearchBarProps {
     /** Resolves to whether the title was actually added (false if the API doesn't track it). */
     onPick: (title: string) => Promise<boolean>;
     placeholder: string;
@@ -42,7 +42,7 @@ export function SearchBar({
     pathMode,
     navHints = [],
     stickyResults = false,
-}: Props) {
+}: SearchBarProps) {
     // State of the search bar itself
     const [focused, setFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);

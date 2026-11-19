@@ -13,7 +13,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import titleTransform from "../titleTransform";
 
-interface Props {
+export interface DetailPanelProps {
     open: boolean;
     node: GraphNode;
     nodeIds: Set<string>;
@@ -30,7 +30,7 @@ interface Props {
 const wikiUrl = (title: string) =>
     `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
 
-interface LinkRowProps {
+export interface LinkRowProps {
     title: string;
     here: boolean;
     pending: boolean;
@@ -88,7 +88,7 @@ export function DetailPanel({
     onPathModeToggle,
     onLoadAll,
     onClose,
-}: Props) {
+}: DetailPanelProps) {
     const [expanded, setExpanded] = useState(true);
 
     const onCanvas = node.links.filter((l) => nodeIds.has(l)).length;
