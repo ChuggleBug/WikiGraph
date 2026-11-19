@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, checkStatus, fetchLinks, getShortestPath } from "./api";
-import { DetailPanel } from "./components/DetailPanel";
 import { Legend } from "./components/Legend";
-import { SearchBar } from "./components/SearchBar";
 import { ViewControls } from "./components/ViewControls";
 import { Wordmark } from "./components/Wordmark";
 import { GraphCanvas } from "./graph/GraphCanvas";
 import { useGraphStore } from "./graph/useGraphStore";
 import { useView } from "./graph/useView";
 import titleTransform from "./titleTransform";
-import MobileContentPopup from "./components/MobileContentPopup";
 import { NAV_HINTS } from "./desktopNavHints";
 import { isMobile } from "react-device-detect";
-import { FaSearch } from "react-icons/fa";
+import GraphControls from "./GraphControls";
 
 export default function App() {
     const store = useGraphStore();
@@ -182,51 +179,42 @@ export default function App() {
 
     return (
         <div className="wg-root">
-            {/* Search bars make the new node selected */}
-            {!isMobile ? (
-                <div className="wg-search-desktop-wrapper">
-                    <SearchBar
-                        onPick={onPick}
-                        placeholder={
-                            pathMode
-                                ? `Find a Path from ${pathTruncatedTitle}`
-                                : "Search Wikipedia articles..."
-                        }
-                        pathMode={pathMode}
-                        navHints={NAV_HINTS}
-                    />
-                </div>
-            ) : (
-                <MobileContentPopup
-                    displayText="Search"
-                    open={popupOpen}
-                    onClose={closeMobilePopup}
-                >
-                    {/* Search bars make the new node selected */}
-                    <SearchBar
-                        onPick={onPick}
-                        placeholder={
-                            pathMode
-                                ? `Find a Path from ${pathTruncatedTitle}`
-                                : "Search Wikipedia articles..."
-                        }
-                        pathMode={pathMode}
-                        stickyResults={true}
-                    />
-                </MobileContentPopup>
-            )}
-
-            {isMobile && (
-                <button
-                    className="wg-panel wg-search-fab"
-                    onClick={() => setPopupOpen(true)}
-                    aria-label="Search"
-                >
-                    <span className="wg-icbtn">
-                        <FaSearch size={16} />
-                    </span>
-                </button>
-            )}
+            <GraphControls
+                isMobile={isMobile}
+                mobilePopup={{
+                    open: popupOpen,
+                    onOpen: () => setPopupOpen(true),
+                    onClose: closeMobilePopup,
+                }}
+                searchBar={{
+                    onPick,
+                    placeholder: pathMode
+                        ? `Find a Path from ${pathTruncatedTitle}`
+                        : "Search Wikipedia articles...",
+                    pathMode,
+                    navHints: NAV_HINTS,
+                    stickyResults: isMobile,
+                }}
+                detailPanel={{
+                    open: panelOpen,
+                    node: store.selectedNode,
+                    nodeIds: store.nodeIds,
+                    pendingTitles: pending,
+                    loadingAll: loadingAll,
+                    onAdd: (t) => addTitle(t, false),
+                    onDelete: (t) => {
+                        store.delete(t);
+                        setPathMode(false);
+                    },
+                    onSelectExisting: store.select,
+                    onLoadAll: loadAllLinks,
+                    onPathModeToggle: () => setPathMode((v) => !v),
+                    onClose: () => {
+                        store.closePanel();
+                        setPathMode(false);
+                    },
+                }}
+            />
 
             {/* Fixed to top left */}
             <Wordmark />
@@ -244,27 +232,7 @@ export default function App() {
                     setPathMode(false);
                 }}
             />
-            {store.selectedNode && (
-                <DetailPanel
-                    open={panelOpen}
-                    node={store.selectedNode}
-                    nodeIds={store.nodeIds}
-                    pendingTitles={pending}
-                    loadingAll={loadingAll}
-                    onAdd={(t) => addTitle(t, false)}
-                    onDelete={(t) => {
-                        store.delete(t);
-                        setPathMode(false);
-                    }}
-                    onSelectExisting={store.select}
-                    onLoadAll={loadAllLinks}
-                    onPathModeToggle={() => setPathMode((v) => !v)}
-                    onClose={() => {
-                        store.closePanel();
-                        setPathMode(false);
-                    }}
-                />
-            )}
+
             <ViewControls
                 onZoomIn={() => zoomCenter(1.2)}
                 onZoomOut={() => zoomCenter(1 / 1.2)}
