@@ -13,6 +13,8 @@ export interface GraphCanvasProps {
     onZoomAt: (factor: number, px: number, py: number) => void;
     onSelectNode: (id: string) => void;
     onBackgroundClick: () => void;
+    /** When true, one-finger drags neither pan the canvas nor move nodes; taps and pinch-zoom still work. */
+    dragLocked?: boolean;
 }
 
 const DRAG_THRESHOLD = 3;
@@ -26,6 +28,7 @@ export function GraphCanvas({
     onZoomAt,
     onSelectNode,
     onBackgroundClick,
+    dragLocked = false,
 }: GraphCanvasProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(
@@ -56,6 +59,7 @@ export function GraphCanvas({
     const nodeDrag = useRef<{
         id: string;
         moved: boolean;
+        started: boolean;
         startX: number;
         startY: number;
         offX: number;
@@ -70,7 +74,71 @@ export function GraphCanvas({
         };
     };
 
+    // Active pointers, tracked in the capture phase so pinches work over nodes too.
+    const pointers = useRef(new Map<number, { x: number; y: number }>());
+    // True from the moment a second finger lands until every finger lifts.
+    const pinching = useRef(false);
+
+    const pinchMetrics = () => {
+        const [a, b] = [...pointers.current.values()];
+        return {
+            dist: Math.hypot(b.x - a.x, b.y - a.y),
+            midX: (a.x + b.x) / 2,
+            midY: (a.y + b.y) / 2,
+        };
+    };
+
+    const onPointerDownCapture = (e: React.PointerEvent) => {
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.current.size === 2) {
+            pinching.current = true;
+            // Abandon any single-pointer gesture in progress.
+            pan.current.active = false;
+            setGrabbing(false);
+            const d = nodeDrag.current;
+            if (d?.started) {
+                drag.end(d.id);
+            }
+            nodeDrag.current = null;
+        }
+    };
+    const onPointerMoveCapture = (e: React.PointerEvent) => {
+        if (!pointers.current.has(e.pointerId)) {
+            return;
+        }
+        if (!pinching.current || pointers.current.size !== 2) {
+            pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            return;
+        }
+        const before = pinchMetrics();
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        const after = pinchMetrics();
+        const rect = svgRef.current!.getBoundingClientRect();
+        onPanBy(after.midX - before.midX, after.midY - before.midY);
+        if (before.dist > 0) {
+            onZoomAt(
+                after.dist / before.dist,
+                after.midX - rect.left,
+                after.midY - rect.top,
+            );
+        }
+    };
+    const onPointerEndCapture = (e: React.PointerEvent) => {
+        pointers.current.delete(e.pointerId);
+        if (pointers.current.size === 0) {
+            // Defer so bubble-phase up handlers still see the pinch and skip click logic.
+            queueMicrotask(() => {
+                if (pointers.current.size === 0) {
+                    pinching.current = false;
+                }
+            });
+        }
+    };
+
     const onBgPointerDown = (e: React.PointerEvent) => {
+        if (pinching.current) {
+            return;
+        }
         pan.current = {
             active: true,
             moved: false,
@@ -78,7 +146,9 @@ export function GraphCanvas({
             y: e.clientY,
         };
         e.currentTarget.setPointerCapture(e.pointerId);
-        setGrabbing(true);
+        if (!dragLocked) {
+            setGrabbing(true);
+        }
     };
     const onBgPointerMove = (e: React.PointerEvent) => {
         if (!pan.current.active) {
@@ -88,6 +158,10 @@ export function GraphCanvas({
         const dy = e.clientY - pan.current.y;
         if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
             pan.current.moved = true;
+        }
+        if (dragLocked) {
+            // Only track distance so a drag isn't treated as a tap.
+            return;
         }
         pan.current.x = e.clientX;
         pan.current.y = e.clientY;
@@ -104,11 +178,15 @@ export function GraphCanvas({
 
     const onNodePointerDown = (e: React.PointerEvent, id: string) => {
         e.stopPropagation();
+        if (pinching.current) {
+            return;
+        }
         const p = toGraph(e.clientX, e.clientY);
         const c = positions.get(id);
         nodeDrag.current = {
             id,
             moved: false,
+            started: false,
             startX: e.clientX,
             startY: e.clientY,
             offX: c ? c.x - p.x : 0,
@@ -130,7 +208,13 @@ export function GraphCanvas({
                 return;
             }
             d.moved = true;
-            drag.start(d.id, p.x + d.offX, p.y + d.offY);
+            if (!dragLocked) {
+                d.started = true;
+                drag.start(d.id, p.x + d.offX, p.y + d.offY);
+            }
+            return;
+        }
+        if (!d.started) {
             return;
         }
         drag.move(d.id, p.x + d.offX, p.y + d.offY);
@@ -141,9 +225,9 @@ export function GraphCanvas({
             return;
         }
         (e.target as Element).releasePointerCapture(e.pointerId);
-        if (d.moved) {
+        if (d.started) {
             drag.end(d.id);
-        } else {
+        } else if (!d.moved) {
             onSelectNode(d.id);
         }
         nodeDrag.current = null;
@@ -161,6 +245,11 @@ export function GraphCanvas({
             onPointerDown={onBgPointerDown}
             onPointerMove={onBgPointerMove}
             onPointerUp={onBgPointerUp}
+            onPointerCancel={onBgPointerUp}
+            onPointerDownCapture={onPointerDownCapture}
+            onPointerMoveCapture={onPointerMoveCapture}
+            onPointerUpCapture={onPointerEndCapture}
+            onPointerCancelCapture={onPointerEndCapture}
             onWheel={onWheel}
         >
             <rect x={0} y={0} width="100%" height="100%" fill="transparent" />

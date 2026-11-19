@@ -20,6 +20,7 @@ export default function App() {
     const [toast, setToast] = useState<string | null>(null);
     const toastTimer = useRef<number | undefined>(undefined);
     const [pathMode, setPathMode] = useState(false);
+    const [dragLocked, setDragLocked] = useState(false);
 
     const showToast = useCallback((message: string) => {
         setToast(message);
@@ -226,6 +227,7 @@ export default function App() {
                 view={view}
                 onPanBy={panBy}
                 onZoomAt={zoomAt}
+                dragLocked={isMobile && dragLocked}
                 onSelectNode={store.select}
                 onBackgroundClick={() => {
                     store.closePanel();
@@ -239,6 +241,9 @@ export default function App() {
                 onReset={reset}
                 onClear={store.clear}
                 canClear={store.nodes.length > 0}
+                showDragLock={isMobile}
+                dragLocked={dragLocked}
+                onToggleDragLock={() => setDragLocked((v) => !v)}
             />
             <Legend />
             {toast && <div className="wg-toast">{toast}</div>}

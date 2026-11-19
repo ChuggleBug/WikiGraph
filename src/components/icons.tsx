@@ -66,6 +66,20 @@ export const TrashIcon = ({ size = 17 }: IconProps) => (
     </svg>
 );
 
+export const LockIcon = ({ size = 17 }: IconProps) => (
+    <svg {...base(size)} strokeWidth={2}>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11 V7 a4 4 0 0 1 8 0 v4" />
+    </svg>
+);
+
+export const UnlockIcon = ({ size = 17 }: IconProps) => (
+    <svg {...base(size)} strokeWidth={2}>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11 V7 a4 4 0 0 1 7.75-1.4" />
+    </svg>
+);
+
 export const ExternalIcon = ({ size = 13 }: IconProps) => (
     <svg {...base(size)} strokeWidth={2.2}>
         <path d="M7 17 L17 7" />

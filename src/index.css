@@ -743,6 +743,11 @@ hr,
     background: var(--wg-surface-hover);
 }
 
+.wg-icbtn--active {
+    color: var(--wg-accent);
+    background: var(--wg-surface-hover);
+}
+
 .wg-icbtn--danger {
     color: var(--wg-accent);
 }
