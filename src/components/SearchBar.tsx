@@ -1,8 +1,10 @@
 import React, { useId, useRef, useState } from "react";
 import { ApiError, searchTitles, type SearchElement } from "../api";
-import { PathIcon, SpinnerIcon } from "./icons";
+import { PathIcon } from "./icons";
+import CircularProgress from "@mui/material/CircularProgress";
+import SearchIcon from "@mui/icons-material/SearchRounded";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import titleTransform, { textTrim } from "../titleTransform";
-import { FaLongArrowAltLeft, FaSearch } from "react-icons/fa";
 
 export type NavSearchState = "search" | "results" | "always";
 
@@ -190,7 +192,7 @@ export function SearchBar({
             >
                 <div className="wg-search-field">
                     {/* Input text box */}
-                    {pathMode ? <PathIcon size={16} /> : <FaSearch size={16} />}
+                    {pathMode ? <PathIcon size={16} /> : <SearchIcon sx={{ fontSize: 16 }} />}
                     {/* manually set to 16px to prevent zoom in */}
                     <input
                         style={{ fontSize: 16 }}
@@ -220,7 +222,7 @@ export function SearchBar({
                 </div>
 
                 <div className="wg-search-status">
-                    {status === "loading" && <SpinnerIcon size={14} />}
+                    {status === "loading" && <CircularProgress size={14} thickness={5} color="inherit" />}
                     {!stale && status === "done" && (
                         <span className="wg-search-count">
                             {searchResults.length}{" "}
@@ -291,7 +293,7 @@ export function SearchBar({
                                                 </span>
                                                 {e.type == "redirect" && (
                                                     <div className="wg-result-title-redirect">
-                                                        <FaLongArrowAltLeft />
+                                                        <KeyboardBackspaceIcon fontSize="inherit" />
                                                         {/* Sum  */}
                                                         {textTrim(
                                                             redirectString,

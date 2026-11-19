@@ -1,16 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { GraphNode } from "../types";
-import {
-    CheckIcon,
-    ChevronDownIcon,
-    ExternalIcon,
-    PlusIcon,
-    SpinnerIcon,
-    ArrowRightIcon,
-    TrashIcon,
-    PathIcon,
-} from "./icons";
-import CloseIcon from "@mui/icons-material/Close";
+import { PathIcon } from "./icons";
+import CircularProgress from "@mui/material/CircularProgress";
+import CheckIcon from "@mui/icons-material/CheckRounded";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMoreRounded";
+import OpenInNewIcon from "@mui/icons-material/OpenInNewRounded";
+import AddIcon from "@mui/icons-material/AddRounded";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForwardRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 import titleTransform from "../titleTransform";
 
 export interface DetailPanelProps {
@@ -59,19 +57,19 @@ function LinkRow({
             <span className="wg-lk-name">{titleTransform(title)}</span>
             {pending ? (
                 <span className="wg-lk-add">
-                    <SpinnerIcon size={12} />
+                    <CircularProgress size={12} thickness={5} color="inherit" />
                 </span>
             ) : here ? (
                 <span className="wg-lk-on" title="on canvas">
                     {hovered ? (
-                        <ArrowRightIcon size={12} />
+                        <ArrowForwardIcon sx={{ fontSize: 12 }} />
                     ) : (
-                        <CheckIcon size={12} />
+                        <CheckIcon sx={{ fontSize: 12 }} />
                     )}
                 </span>
             ) : (
                 <span className="wg-lk-add" title="add to canvas">
-                    <PlusIcon size={12} />
+                    <AddIcon sx={{ fontSize: 12 }} />
                 </span>
             )}
         </button>
@@ -159,7 +157,7 @@ export function DetailPanel({
                     onClick={() => setExpanded((v) => !v)}
                 >
                     {expanded ? "Hide list" : "Show list"}
-                    <ChevronDownIcon size={12} />
+                    <ExpandMoreIcon sx={{ fontSize: 12 }} />
                 </button>
                 <button
                     className="wg-dp-path"
@@ -217,14 +215,14 @@ export function DetailPanel({
                     rel="noreferrer"
                 >
                     Open on Wikipedia
-                    <ExternalIcon size={13} />
+                    <OpenInNewIcon sx={{ fontSize: 13 }} />
                 </a>
                 <button
                     className="wg-icbtn wg-icbtn--danger"
                     onClick={() => onDelete(node.id)}
                     aria-label="Delete selected node"
                 >
-                    <TrashIcon size={24} />
+                    <DeleteOutlineRoundedIcon sx={{ fontSize: 24 }} />
                 </button>
             </div>
             {/* </div> */}

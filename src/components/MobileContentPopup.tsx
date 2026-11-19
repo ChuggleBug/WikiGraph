@@ -1,5 +1,5 @@
 import type React from "react";
-import CloseIcon from "@mui/icons-material/Close";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 
 export type MobileContentPopupProps = {
     displayText: string;

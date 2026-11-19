@@ -1,4 +1,4 @@
-import { FaSearch } from "react-icons/fa";
+import SearchIcon from "@mui/icons-material/SearchRounded";
 import { DetailPanel, type DetailPanelProps } from "./components/DetailPanel";
 import { NodeIcon } from "./components/icons";
 import MobileContentPopup from "./components/MobileContentPopup";
@@ -142,7 +142,7 @@ export default function GraphControls({
                         {contentType === "details" ? (
                             <NodeIcon size={18} />
                         ) : (
-                            <FaSearch size={16} />
+                            <SearchIcon sx={{ fontSize: 16 }} />
                         )}
                     </span>
                 </button>

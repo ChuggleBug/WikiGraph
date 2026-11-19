@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import {
-    FitIcon,
-    LockIcon,
-    MinusIcon,
-    PlusIcon,
-    TrashIcon,
-    UnlockIcon,
-} from "./icons";
+import AddIcon from "@mui/icons-material/AddRounded";
+import RemoveIcon from "@mui/icons-material/RemoveRounded";
+import CropFreeIcon from "@mui/icons-material/CropFreeRounded";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 
 export interface ViewControlsProps {
     onZoomIn: () => void;
@@ -80,21 +78,21 @@ export function ViewControls({
                     onClick={onZoomIn}
                     aria-label="Zoom in"
                 >
-                    <PlusIcon size={18} />
+                    <AddIcon sx={{ fontSize: 18 }} />
                 </button>
                 <button
                     className="wg-icbtn"
                     onClick={onZoomOut}
                     aria-label="Zoom out"
                 >
-                    <MinusIcon />
+                    <RemoveIcon sx={{ fontSize: 18 }} />
                 </button>
                 <button
                     className="wg-icbtn"
                     onClick={onReset}
                     aria-label="Reset view"
                 >
-                    <FitIcon />
+                    <CropFreeIcon sx={{ fontSize: 17 }} />
                 </button>
                 {showDragLock && (
                     <button
@@ -105,7 +103,11 @@ export function ViewControls({
                         }
                         aria-pressed={dragLocked}
                     >
-                        {dragLocked ? <LockIcon /> : <UnlockIcon />}
+                        {dragLocked ? (
+                            <LockOutlinedIcon sx={{ fontSize: 17 }} />
+                        ) : (
+                            <LockOpenOutlinedIcon sx={{ fontSize: 17 }} />
+                        )}
                     </button>
                 )}
                 <div className="sep" />
@@ -115,7 +117,7 @@ export function ViewControls({
                     disabled={!canClear}
                     aria-label="Clear canvas"
                 >
-                    <TrashIcon />
+                    <DeleteOutlineRoundedIcon sx={{ fontSize: 17 }} />
                 </button>
             </div>
 
