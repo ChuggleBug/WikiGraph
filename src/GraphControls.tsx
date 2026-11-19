@@ -39,8 +39,9 @@ export default function GraphControls({
     } = detailPanel;
     const { navHints, onPick, stickyResults, ...searchBarRest } = searchBar;
 
+    // Path mode needs the search bar to pick the target, so it wins over details
     let contentType: PopupContent = "search";
-    if (detailPanel.open) {
+    if (detailPanel.open && !searchBar.pathMode) {
         contentType = "details";
     }
 
@@ -48,13 +49,14 @@ export default function GraphControls({
     let popUpText;
     switch (contentType) {
         case "search": {
-            popUpText = "Search";
+            popUpText = searchBar.pathMode ? "Pathfind" : "Search";
+
             popupChild = (
                 <SearchBar
                     {...searchBarRest}
                     onPick={async (t) => {
                         const ok = await onPick(t);
-                        if (ok) {
+                        if (ok && !searchBar.pathMode) {
                             mobilePopup.onOpen();
                         }
                         return ok;
@@ -85,8 +87,8 @@ export default function GraphControls({
                         mobilePopup.onClose();
                     }}
                     onPathModeToggle={() => {
+                        // Popup stays open and switches to search (pathMode → "search")
                         onPathModeToggle();
-                        mobilePopup.onClose();
                     }}
                     onDelete={(t) => {
                         onDelete(t);
@@ -107,9 +109,7 @@ export default function GraphControls({
             {!isMobile ? (
                 <>
                     <div className="wg-search-desktop-wrapper">
-                        <SearchBar
-                            {...searchBar}
-                        />
+                        <SearchBar {...searchBar} />
                     </div>
                     {node && (
                         <div
